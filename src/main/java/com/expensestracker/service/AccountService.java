@@ -5,8 +5,8 @@ import com.expensestracker.dto.response.AccountResponse;
 import com.expensestracker.model.Account;
 import com.expensestracker.model.User;
 import com.expensestracker.repository.AccountRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,12 +14,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class AccountService {
+    
+    private static final Logger log = LoggerFactory.getLogger(AccountService.class);
     
     private final AccountRepository accountRepository;
     private final UserService userService;
+    
+    public AccountService(AccountRepository accountRepository, UserService userService) {
+        this.accountRepository = accountRepository;
+        this.userService = userService;
+    }
     
     @Transactional
     public AccountResponse createAccount(Long userId, AccountRequest request) {

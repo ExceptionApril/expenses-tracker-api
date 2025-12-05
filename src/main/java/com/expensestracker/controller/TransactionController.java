@@ -5,8 +5,8 @@ import com.expensestracker.dto.response.ApiResponse;
 import com.expensestracker.dto.response.TransactionResponse;
 import com.expensestracker.service.TransactionService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,17 +15,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/transactions")
-@RequiredArgsConstructor
-@Slf4j
 @CrossOrigin(origins = "*")
 public class TransactionController {
     
+    private static final Logger log = LoggerFactory.getLogger(TransactionController.class);
+    
     private final TransactionService transactionService;
     
-    /**
-     * Add a new transaction (income or expense)
-     * POST /api/transactions
-     */
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
+    
     @PostMapping
     public ResponseEntity<ApiResponse<TransactionResponse>> addTransaction(
             @RequestHeader("userId") Long userId,
@@ -43,10 +43,6 @@ public class TransactionController {
         }
     }
     
-    /**
-     * Get all transactions for current user
-     * GET /api/transactions
-     */
     @GetMapping
     public ResponseEntity<ApiResponse<List<TransactionResponse>>> getAllTransactions(
             @RequestHeader("userId") Long userId) {
@@ -60,10 +56,6 @@ public class TransactionController {
         }
     }
     
-    /**
-     * Get transaction by ID
-     * GET /api/transactions/{id}
-     */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TransactionResponse>> getTransactionById(
             @RequestHeader("userId") Long userId,
@@ -78,10 +70,6 @@ public class TransactionController {
         }
     }
     
-    /**
-     * Delete a transaction
-     * DELETE /api/transactions/{id}
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTransaction(
             @RequestHeader("userId") Long userId,

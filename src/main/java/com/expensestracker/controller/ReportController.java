@@ -1,13 +1,10 @@
 package com.expensestracker.controller;
 
 import com.expensestracker.dto.response.ApiResponse;
-
 import com.expensestracker.dto.response.ReportResponse;
-
 import com.expensestracker.service.ReportService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,18 +15,17 @@ import java.time.YearMonth;
 
 @RestController
 @RequestMapping("/api/reports")
-@RequiredArgsConstructor
-@Slf4j
 @CrossOrigin(origins = "*")
-class ReportController {
+public class ReportController {
+    
+    private static final Logger log = LoggerFactory.getLogger(ReportController.class);
     
     private final ReportService reportService;
     
-    /**
-     * Get spending summary report
-     * GET /api/reports/summary?month=2025-01
-     * Or GET /api/reports/summary?startDate=2025-01-01&endDate=2025-01-31
-     */
+    public ReportController(ReportService reportService) {
+        this.reportService = reportService;
+    }
+    
     @GetMapping("/summary")
     public ResponseEntity<ApiResponse<ReportResponse>> getSummary(
             @RequestHeader("userId") Long userId,
@@ -38,13 +34,11 @@ class ReportController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
         try {
-            // If month is provided, use it
             if (month != null && !month.isEmpty()) {
                 YearMonth yearMonth = YearMonth.parse(month);
                 startDate = yearMonth.atDay(1);
                 endDate = yearMonth.atEndOfMonth();
             } else if (startDate == null || endDate == null) {
-                // Default to current month if no parameters provided
                 YearMonth currentMonth = YearMonth.now();
                 startDate = currentMonth.atDay(1);
                 endDate = currentMonth.atEndOfMonth();
