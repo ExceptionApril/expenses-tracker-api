@@ -36,26 +36,26 @@ public class TransactionService {
     public TransactionResponse addTransaction(Long userId, TransactionRequest request) {
         log.info("Adding transaction for user: {}", userId);
         
-        User user = userService.getUserById(userId);
-        
+        // 1. Validate Account
         Account account = accountRepository.findByAccountIdAndUser_UserId(
                 request.getAccountId(), userId)
                 .orElseThrow(() -> new RuntimeException("Account not found or access denied"));
         
+        // 2. Validate Category
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         
+        // 3. Create Transaction (NO transactionType here, it comes from Category)
         Transaction transaction = Transaction.builder()
-                .user(user)
                 .account(account)
                 .category(category)
                 .amount(request.getAmount())
-                .transactionType(Transaction.TransactionType.valueOf(request.getTransactionType()))
                 .description(request.getDescription())
                 .transactionDate(request.getTransactionDate())
                 .build();
         
-        if (transaction.getTransactionType() == Transaction.TransactionType.INCOME) {
+        // 4. Update Account Balance based on CATEGORY Type
+        if (category.getType() == Category.CategoryType.INCOME) {
             account.setBalance(account.getBalance().add(request.getAmount()));
             log.info("Account balance increased by: {}", request.getAmount());
         } else {
@@ -73,7 +73,7 @@ public class TransactionService {
     
     @Transactional(readOnly = true)
     public List<TransactionResponse> getUserTransactions(Long userId) {
-        return transactionRepository.findByUser_UserIdOrderByTransactionDateDesc(userId)
+        return transactionRepository.findByAccount_User_UserIdOrderByTransactionDateDesc(userId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -84,7 +84,8 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
         
-        if (!transaction.getUser().getUserId().equals(userId)) {
+        // Check ownership via Account -> User
+        if (!transaction.getAccount().getUser().getUserId().equals(userId)) {
             throw new RuntimeException("Access denied");
         }
         
@@ -96,12 +97,13 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
         
-        if (!transaction.getUser().getUserId().equals(userId)) {
+        if (!transaction.getAccount().getUser().getUserId().equals(userId)) {
             throw new RuntimeException("Access denied");
         }
         
         Account account = transaction.getAccount();
-        if (transaction.getTransactionType() == Transaction.TransactionType.INCOME) {
+        // Revert balance using Category Type
+        if (transaction.getCategory().getType() == Category.CategoryType.INCOME) {
             account.setBalance(account.getBalance().subtract(transaction.getAmount()));
         } else {
             account.setBalance(account.getBalance().add(transaction.getAmount()));
@@ -117,10 +119,12 @@ public class TransactionService {
         return TransactionResponse.builder()
                 .transactionId(transaction.getTransactionId())
                 .accountName(transaction.getAccount().getAccountName())
-                .categoryName(transaction.getCategory().getCategoryName())
-                .categoryType(transaction.getCategory().getCategoryType().name())
+                .categoryName(transaction.getCategory().getName())
+                // Type is derived from the Category
+                .categoryType(transaction.getCategory().getType().name()) 
                 .amount(transaction.getAmount())
-                .transactionType(transaction.getTransactionType().name())
+                // Use Category Type for the response "transactionType" field
+                .transactionType(transaction.getCategory().getType().name()) 
                 .description(transaction.getDescription())
                 .transactionDate(transaction.getTransactionDate())
                 .build();
