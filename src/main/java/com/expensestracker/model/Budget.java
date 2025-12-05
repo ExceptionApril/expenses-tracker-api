@@ -1,13 +1,16 @@
 package com.expensestracker.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "budget")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Budget {
     
     @Id
@@ -17,86 +20,20 @@ public class Budget {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; //
+    @ToString.Exclude
+    private User user;
     
-    // Goal removed: budgets are no longer linked to Goal
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    @ToString.Exclude
+    private Category category;
     
-    @Column(name = "target_amount", nullable = false, precision = 15, scale = 2)
-    private BigDecimal targetAmount;
+    @Column(name = "amount_limit", nullable = false, precision = 15, scale = 2)
+    private BigDecimal amountLimit;
     
-    @Column(name = "deadline_date")
-    private LocalDate deadlineDate;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private BudgetStatus status;
-    
-    @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL)
-    private List<Transaction> transactions = new ArrayList<>();//
-    
-    public enum BudgetStatus {
-        ACTIVE,
-        COMPLETED,
-        EXPIRED
-    }
-    
-    public Budget() {
-    }
-    
-    public Long getBudgetId() {
-        return budgetId;
-    }
-    
-    public void setBudgetId(Long budgetId) {
-        this.budgetId = budgetId;
-    }
-    
-    public User getUser() {
-        return user;
-    }
-    
-    public void setUser(User user) {
-        this.user = user;
-    }
-    
-    // Goal association removed; getters/setters deleted
-    
-    public BigDecimal getTargetAmount() {
-        return targetAmount;
-    }
-    
-    public void setTargetAmount(BigDecimal targetAmount) {
-        this.targetAmount = targetAmount;
-    }
-    
-    public LocalDate getDeadlineDate() {
-        return deadlineDate;
-    }
-    
-    public void setDeadlineDate(LocalDate deadlineDate) {
-        this.deadlineDate = deadlineDate;
-    }
-    
-    public BudgetStatus getStatus() {
-        return status;
-    }
-    
-    public void setStatus(BudgetStatus status) {
-        this.status = status;
-    }
-    
-    public List<Transaction> getTransactions() {
-        return transactions;
-    }
-    
-    public void setTransactions(List<Transaction> transactions) {
-        this.transactions = transactions;
-    }
-    
-    @PrePersist
-    protected void onCreate() {
-        if (status == null) {
-            status = BudgetStatus.ACTIVE;
-        }
-    }
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
+
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
 }

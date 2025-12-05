@@ -4,6 +4,7 @@ public class CategoryResponse {
     private Long categoryId;
     private String categoryName;
     private String categoryType;
+    private String classification; // <--- ADDED THIS
     private String icon;
     private boolean isSystemCategory;
     
@@ -11,10 +12,11 @@ public class CategoryResponse {
     }
     
     public CategoryResponse(Long categoryId, String categoryName, String categoryType, 
-                           String icon, boolean isSystemCategory) {
+                           String classification, String icon, boolean isSystemCategory) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.categoryType = categoryType;
+        this.classification = classification; // <--- ADDED THIS
         this.icon = icon;
         this.isSystemCategory = isSystemCategory;
     }
@@ -27,6 +29,7 @@ public class CategoryResponse {
         private Long categoryId;
         private String categoryName;
         private String categoryType;
+        private String classification; // <--- ADDED THIS
         private String icon;
         private boolean isSystemCategory;
         
@@ -44,6 +47,11 @@ public class CategoryResponse {
             this.categoryType = categoryType;
             return this;
         }
+
+        public CategoryResponseBuilder classification(String classification) { // <--- ADDED THIS
+            this.classification = classification;
+            return this;
+        }
         
         public CategoryResponseBuilder icon(String icon) {
             this.icon = icon;
@@ -56,47 +64,26 @@ public class CategoryResponse {
         }
         
         public CategoryResponse build() {
-            return new CategoryResponse(categoryId, categoryName, categoryType, icon, isSystemCategory);
+            return new CategoryResponse(categoryId, categoryName, categoryType, classification, icon, isSystemCategory);
         }
     }
     
-    public Long getCategoryId() {
-        return categoryId;
-    }
+    // Getters and Setters
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
     
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
     
-    public String getCategoryName() {
-        return categoryName;
-    }
+    public String getCategoryType() { return categoryType; }
+    public void setCategoryType(String categoryType) { this.categoryType = categoryType; }
+
+    public String getClassification() { return classification; } // <--- ADDED THIS
+    public void setClassification(String classification) { this.classification = classification; } // <--- ADDED THIS
     
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
+    public String getIcon() { return icon; }
+    public void setIcon(String icon) { this.icon = icon; }
     
-    public String getCategoryType() {
-        return categoryType;
-    }
-    
-    public void setCategoryType(String categoryType) {
-        this.categoryType = categoryType;
-    }
-    
-    public String getIcon() {
-        return icon;
-    }
-    
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-    
-    public boolean isSystemCategory() {
-        return isSystemCategory;
-    }
-    
-    public void setSystemCategory(boolean systemCategory) {
-        isSystemCategory = systemCategory;
-    }
+    public boolean isSystemCategory() { return isSystemCategory; }
+    public void setSystemCategory(boolean systemCategory) { isSystemCategory = systemCategory; }
 }
