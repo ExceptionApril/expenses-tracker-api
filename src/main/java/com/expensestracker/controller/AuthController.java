@@ -1,3 +1,4 @@
+// ===== AuthController.java =====
 package com.expensestracker.controller;
 
 import com.expensestracker.dto.request.LoginRequest;
@@ -6,25 +7,25 @@ import com.expensestracker.dto.response.ApiResponse;
 import com.expensestracker.dto.response.UserResponse;
 import com.expensestracker.service.UserService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
-@Slf4j
 @CrossOrigin(origins = "*")
 public class AuthController {
     
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
+    
     private final UserService userService;
     
-    /**
-     * Register a new user
-     * POST /api/auth/register
-     */
+    public AuthController(UserService userService) {
+        this.userService = userService;
+    }
+    
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> register(
             @Valid @RequestBody UserRegistrationRequest request) {
@@ -42,10 +43,6 @@ public class AuthController {
         }
     }
     
-    /**
-     * Login user
-     * POST /api/auth/login
-     */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserResponse>> login(
             @Valid @RequestBody LoginRequest request) {
@@ -61,10 +58,6 @@ public class AuthController {
         }
     }
     
-    /**
-     * Test endpoint - Check if API is running
-     * GET /api/auth/test
-     */
     @GetMapping("/test")
     public ResponseEntity<ApiResponse<String>> test() {
         return ResponseEntity.ok(

@@ -4,8 +4,8 @@ import com.expensestracker.dto.request.TransactionRequest;
 import com.expensestracker.dto.response.TransactionResponse;
 import com.expensestracker.model.*;
 import com.expensestracker.repository.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,32 +13,38 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class TransactionService {
+    
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
     
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final CategoryRepository categoryRepository;
     private final UserService userService;
     
+    public TransactionService(TransactionRepository transactionRepository, 
+                            AccountRepository accountRepository,
+                            CategoryRepository categoryRepository, 
+                            UserService userService) {
+        this.transactionRepository = transactionRepository;
+        this.accountRepository = accountRepository;
+        this.categoryRepository = categoryRepository;
+        this.userService = userService;
+    }
+    
     @Transactional
     public TransactionResponse addTransaction(Long userId, TransactionRequest request) {
         log.info("Adding transaction for user: {}", userId);
         
-        // Validate user
         User user = userService.getUserById(userId);
         
-        // Validate account belongs to user
         Account account = accountRepository.findByAccountIdAndUser_UserId(
                 request.getAccountId(), userId)
                 .orElseThrow(() -> new RuntimeException("Account not found or access denied"));
         
-        // Validate category - FIXED: Added missing dot before orElseThrow
         Category category = categoryRepository.findById(request.getCategoryId())
-        .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new RuntimeException("Category not found"));
         
-        // Create transaction
         Transaction transaction = Transaction.builder()
                 .user(user)
                 .account(account)
@@ -49,7 +55,6 @@ public class TransactionService {
                 .transactionDate(request.getTransactionDate())
                 .build();
         
-        // Update account balance
         if (transaction.getTransactionType() == Transaction.TransactionType.INCOME) {
             account.setBalance(account.getBalance().add(request.getAmount()));
             log.info("Account balance increased by: {}", request.getAmount());
@@ -95,7 +100,6 @@ public class TransactionService {
             throw new RuntimeException("Access denied");
         }
         
-        // Revert account balance
         Account account = transaction.getAccount();
         if (transaction.getTransactionType() == Transaction.TransactionType.INCOME) {
             account.setBalance(account.getBalance().subtract(transaction.getAmount()));

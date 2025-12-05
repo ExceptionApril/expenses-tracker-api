@@ -5,8 +5,8 @@ import com.expensestracker.dto.response.CategoryResponse;
 import com.expensestracker.model.Category;
 import com.expensestracker.model.User;
 import com.expensestracker.repository.CategoryRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,12 +14,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class CategoryService {
+    
+    private static final Logger log = LoggerFactory.getLogger(CategoryService.class);
     
     private final CategoryRepository categoryRepository;
     private final UserService userService;
+    
+    public CategoryService(CategoryRepository categoryRepository, UserService userService) {
+        this.categoryRepository = categoryRepository;
+        this.userService = userService;
+    }
     
     @Transactional
     public CategoryResponse createCategory(Long userId, CategoryRequest request) {
@@ -42,7 +47,6 @@ public class CategoryService {
     
     @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories(Long userId) {
-        // Returns both system categories and user's custom categories
         return categoryRepository.findByUserIdOrSystemCategories(userId)
                 .stream()
                 .map(this::mapToResponse)
@@ -59,9 +63,9 @@ public class CategoryService {
     
     @Transactional
     public void deleteCategory(Long userId, Long categoryId) {
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new RuntimeException("Category not found"));
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
         
-        // Can only delete user's own categories, not system categories
         if (category.getUser() == null || !category.getUser().getUserId().equals(userId)) {
             throw new RuntimeException("Cannot delete this category");
         }

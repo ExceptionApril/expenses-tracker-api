@@ -1,44 +1,62 @@
 package com.expensestracker.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class ApiResponse<T> {
     private boolean success;
     private String message;
     private T data;
     private Long timestamp;
     
+    public ApiResponse() {
+    }
+    
+    public ApiResponse(boolean success, String message, T data, Long timestamp) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+        this.timestamp = timestamp;
+    }
+    
     public static <T> ApiResponse<T> success(T data) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .message("Operation successful")
-                .data(data)
-                .timestamp(System.currentTimeMillis())
-                .build();
+        return new ApiResponse<>(true, "Operation successful", data, System.currentTimeMillis());
     }
     
     public static <T> ApiResponse<T> success(String message, T data) {
-        return ApiResponse.<T>builder()
-                .success(true)
-                .message(message)
-                .data(data)
-                .timestamp(System.currentTimeMillis())
-                .build();
+        return new ApiResponse<>(true, message, data, System.currentTimeMillis());
     }
     
     public static <T> ApiResponse<T> error(String message) {
-        return ApiResponse.<T>builder()
-                .success(false)
-                .message(message)
-                .data(null)
-                .timestamp(System.currentTimeMillis())
-                .build();
+        return new ApiResponse<>(false, message, null, System.currentTimeMillis());
+    }
+    
+    public boolean isSuccess() {
+        return success;
+    }
+    
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+    
+    public String getMessage() {
+        return message;
+    }
+    
+    public void setMessage(String message) {
+        this.message = message;
+    }
+    
+    public T getData() {
+        return data;
+    }
+    
+    public void setData(T data) {
+        this.data = data;
+    }
+    
+    public Long getTimestamp() {
+        return timestamp;
+    }
+    
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 }

@@ -4,32 +4,24 @@ import com.expensestracker.dto.request.CategoryRequest;
 import com.expensestracker.dto.response.ApiResponse;
 import com.expensestracker.dto.response.CategoryResponse;
 import com.expensestracker.service.CategoryService;
-
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.List;
 
-// ==================== CATEGORY CONTROLLER ====================
 @RestController
 @RequestMapping("/api/categories")
-@RequiredArgsConstructor
-@Slf4j
 @CrossOrigin(origins = "*")
-class CategoryController {
+public class CategoryController {
     
     private final CategoryService categoryService;
     
-    /**
-     * Get all categories (system + user's custom)
-     * GET /api/categories
-     */
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
+    
     @GetMapping
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories(
             @RequestHeader("userId") Long userId) {
@@ -43,10 +35,6 @@ class CategoryController {
         }
     }
     
-    /**
-     * Create custom category
-     * POST /api/categories
-     */
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(
             @RequestHeader("userId") Long userId,
@@ -63,10 +51,6 @@ class CategoryController {
         }
     }
     
-    /**
-     * Delete custom category
-     * DELETE /api/categories/{id}
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(
             @RequestHeader("userId") Long userId,
@@ -81,3 +65,4 @@ class CategoryController {
         }
     }
 }
+

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-// ==================== BUDGET REPOSITORY ====================
+
 @Repository
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
     List<Budget> findByUser_UserId(Long userId);
