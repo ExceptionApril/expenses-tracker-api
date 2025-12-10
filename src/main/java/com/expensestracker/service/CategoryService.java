@@ -34,8 +34,8 @@ public class CategoryService {
         
         Category category = Category.builder()
                 .user(user)
-                .categoryName(request.getCategoryName())
-                .categoryType(Category.CategoryType.valueOf(request.getCategoryType()))
+                .name(request.getCategoryName())
+                .type(Category.CategoryType.valueOf(request.getCategoryType()))
                 .icon(request.getIcon())
                 .build();
         
@@ -47,7 +47,7 @@ public class CategoryService {
     
     @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories(Long userId) {
-        return categoryRepository.findByUserIdOrSystemCategories(userId)
+        return categoryRepository.findByUserIsNull()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -77,8 +77,8 @@ public class CategoryService {
     private CategoryResponse mapToResponse(Category category) {
         return CategoryResponse.builder()
                 .categoryId(category.getCategoryId())
-                .categoryName(category.getCategoryName())
-                .categoryType(category.getCategoryType().name())
+                .categoryName(category.getName())
+                .categoryType(category.getType().name())
                 .icon(category.getIcon())
                 .isSystemCategory(category.getUser() == null)
                 .build();

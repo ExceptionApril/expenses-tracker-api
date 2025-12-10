@@ -76,23 +76,22 @@ public class DataInitializer implements CommandLineRunner {
         // Create default categories
         Category groceries = Category.builder()
                 .user(admin)
-                .categoryName("Groceries")
-                .categoryType(Category.CategoryType.NEEDS)
+                .name("Groceries")
+                .type(Category.CategoryType.EXPENSE)
                 .icon("shopping-cart")
                 .build();
         groceries = categoryRepository.save(groceries);
 
         Category salary = Category.builder()
                 .user(admin)
-                .categoryName("Salary")
-                .categoryType(Category.CategoryType.SAVINGS)
+                .name("Salary")
+                .type(Category.CategoryType.INCOME)
                 .icon("wallet")
                 .build();
         salary = categoryRepository.save(salary);
 
         // Create a sample transaction
         Transaction t1 = Transaction.builder()
-                .user(admin)
                 .account(checking)
                 .category(groceries)
                 .amount(new BigDecimal("75.25"))
@@ -104,7 +103,6 @@ public class DataInitializer implements CommandLineRunner {
 
         // Create a sample income
         Transaction t2 = Transaction.builder()
-                .user(admin)
                 .account(checking)
                 .category(salary)
                 .amount(new BigDecimal("2500.00"))
@@ -115,6 +113,6 @@ public class DataInitializer implements CommandLineRunner {
         transactionRepository.save(t2);
 
         log.info("DataInitializer: default data seeded (user {}, accounts {}, categories {}, transactions {})",
-                admin.getEmail(), List.of(checking.getAccountName(), cash.getAccountName()), List.of(groceries.getCategoryName(), salary.getCategoryName()), 2);
+                admin.getEmail(), List.of(checking.getAccountName(), cash.getAccountName()), List.of(groceries.getName(), salary.getName()), 2);
     }
 }

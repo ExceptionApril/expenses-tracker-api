@@ -79,6 +79,13 @@
             <scope>runtime</scope>
         </dependency>
         
+        <!-- Lombok for boilerplate reduction -->
+        <!-- <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency> -->
+        
         <!-- Spring Boot DevTools (for hot reload) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

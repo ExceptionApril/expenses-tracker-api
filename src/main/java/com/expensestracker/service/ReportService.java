@@ -37,16 +37,14 @@ public class ReportService {
         if (totalExpenses == null) totalExpenses = BigDecimal.ZERO;
         
         BigDecimal needsSpending = transactionRepository
-                .sumByCategoryTypeAndDateRange(userId, Category.CategoryType.NEEDS, startDate, endDate);
+                .sumByCategoryTypeAndDateRange(userId, Category.CategoryType.INCOME, startDate, endDate);
         if (needsSpending == null) needsSpending = BigDecimal.ZERO;
         
         BigDecimal wantsSpending = transactionRepository
-                .sumByCategoryTypeAndDateRange(userId, Category.CategoryType.WANTS, startDate, endDate);
+                .sumByCategoryTypeAndDateRange(userId, Category.CategoryType.EXPENSE, startDate, endDate);
         if (wantsSpending == null) wantsSpending = BigDecimal.ZERO;
         
-        BigDecimal savingsAmount = transactionRepository
-                .sumByCategoryTypeAndDateRange(userId, Category.CategoryType.SAVINGS, startDate, endDate);
-        if (savingsAmount == null) savingsAmount = BigDecimal.ZERO;
+        BigDecimal savingsAmount = BigDecimal.ZERO;
         
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
         

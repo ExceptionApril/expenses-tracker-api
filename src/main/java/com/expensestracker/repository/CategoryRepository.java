@@ -15,6 +15,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     // Find user's specific categories
     List<Category> findByUser_UserId(Long userId);
     
+    // Find System categories (where user is null)
+    List<Category> findByUserIsNull();
+    
     // Find System categories (where user is null) OR User categories
     @Query("SELECT c FROM Category c WHERE c.user.userId = :userId OR c.user IS NULL")
     List<Category> findByUserIdOrSystemCategories(@Param("userId") Long userId);
