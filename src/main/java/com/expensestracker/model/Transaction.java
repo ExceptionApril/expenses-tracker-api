@@ -30,6 +30,10 @@ public class Transaction {
     @Column(length = 255)
     private String description;
 
+    @Column(name = "transaction_type")
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType;
+
     public Transaction() {
     }
 
@@ -91,6 +95,14 @@ public class Transaction {
         this.description = description;
     }
 
+    public TransactionType getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(TransactionType transactionType) {
+        this.transactionType = transactionType;
+    }
+
     public static TransactionBuilder builder() {
         return new TransactionBuilder();
     }
@@ -140,7 +152,9 @@ public class Transaction {
         }
 
         public Transaction build() {
-            return new Transaction(transactionId, account, category, amount, transactionDate, description);
+            Transaction transaction = new Transaction(transactionId, account, category, amount, transactionDate, description);
+            transaction.setTransactionType(transactionType);
+            return transaction;
         }
     }
 

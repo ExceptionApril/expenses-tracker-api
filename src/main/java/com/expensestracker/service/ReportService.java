@@ -1,7 +1,6 @@
 package com.expensestracker.service;
 
 import com.expensestracker.dto.response.ReportResponse;
-import com.expensestracker.model.Category;
 import com.expensestracker.model.Transaction;
 import com.expensestracker.repository.TransactionRepository;
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ReportService {
@@ -28,21 +28,23 @@ public class ReportService {
     public ReportResponse generateMonthlyReport(Long userId, LocalDate startDate, LocalDate endDate) {
         log.info("Generating report for user {} from {} to {}", userId, startDate, endDate);
         
-        BigDecimal totalIncome = transactionRepository
-                .sumByUserAndTypeAndDateRange(userId, Transaction.TransactionType.INCOME, startDate, endDate);
-        if (totalIncome == null) totalIncome = BigDecimal.ZERO;
+        // Get all transactions for the date range
+        List<Transaction> transactions = transactionRepository
+                .findByAccount_User_UserIdAndTransactionDateBetweenOrderByTransactionDateDesc(userId, startDate, endDate);
         
-        BigDecimal totalExpenses = transactionRepository
-                .sumByUserAndTypeAndDateRange(userId, Transaction.TransactionType.EXPENSE, startDate, endDate);
-        if (totalExpenses == null) totalExpenses = BigDecimal.ZERO;
+        // Calculate totals
+        BigDecimal totalIncome = transactions.stream()
+                .filter(t -> t.getTransactionType() == Transaction.TransactionType.INCOME)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         
-        BigDecimal needsSpending = transactionRepository
-                .sumByCategoryTypeAndDateRange(userId, Category.CategoryType.INCOME, startDate, endDate);
-        if (needsSpending == null) needsSpending = BigDecimal.ZERO;
+        BigDecimal totalExpenses = transactions.stream()
+                .filter(t -> t.getTransactionType() == Transaction.TransactionType.EXPENSE)
+                .map(Transaction::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         
-        BigDecimal wantsSpending = transactionRepository
-                .sumByCategoryTypeAndDateRange(userId, Category.CategoryType.EXPENSE, startDate, endDate);
-        if (wantsSpending == null) wantsSpending = BigDecimal.ZERO;
+        BigDecimal needsSpending = BigDecimal.ZERO;
+        BigDecimal wantsSpending = BigDecimal.ZERO;
         
         BigDecimal savingsAmount = BigDecimal.ZERO;
         

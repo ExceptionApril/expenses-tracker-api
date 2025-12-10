@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-@Component
+// @Component
 @Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 

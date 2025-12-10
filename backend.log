@@ -1,0 +1,58 @@
+Picked up JAVA_TOOL_OPTIONS: -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2025-12-11 00:17:44 - Starting ExpensesTrackerApiApplication v1.0.0 using Java 25 with PID 4876 (D:\expenses-tracker-api\target\expense-tracker-api-1.0.0.jar started by April John in D:\expenses-tracker-api)
+2025-12-11 00:17:44 - No active profile set, falling back to 1 default profile: "default"
+2025-12-11 00:17:45 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-11 00:17:45 - Finished Spring Data repository scanning in 61 ms. Found 5 JPA repository interfaces.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.apache.tomcat.jni.Library in an unnamed module (jar:nested:/D:/expenses-tracker-api/target/expense-tracker-api-1.0.0.jar/!BOOT-INF/lib/tomcat-embed-core-10.1.16.jar!/)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2025-12-11 00:17:45 - Tomcat initialized with port 8080 (http)
+2025-12-11 00:17:45 - Starting service [Tomcat]
+2025-12-11 00:17:45 - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2025-12-11 00:17:45 - Initializing Spring embedded WebApplicationContext
+2025-12-11 00:17:45 - Root WebApplicationContext: initialization completed in 1200 ms
+2025-12-11 00:17:45 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-11 00:17:45 - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-12-11 00:17:46 - HHH000026: Second-level cache disabled
+2025-12-11 00:17:46 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-11 00:17:46 - HikariPool-1 - Starting...
+2025-12-11 00:17:46 - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@a457c2b
+2025-12-11 00:17:46 - HikariPool-1 - Start completed.
+2025-12-11 00:17:46 - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-11 00:17:47 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-12-11 00:17:47 - 
+    alter table transaction 
+       add column transaction_type enum ('INCOME','EXPENSE') not null
+Hibernate: 
+    alter table transaction 
+       add column transaction_type enum ('INCOME','EXPENSE') not null
+2025-12-11 00:17:47 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-11 00:17:47 - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-12-11 00:17:47 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-12-11 00:17:47 - 
+
+Using generated security password: 82f3c2e5-c2f3-4c4e-8843-1495cd4ec7ba
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2025-12-11 00:17:47 - 17 mappings in 'requestMappingHandlerMapping'
+2025-12-11 00:17:47 - Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-12-11 00:17:48 - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@4a9c188f, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@2e5dea22, org.springframework.security.web.context.SecurityContextHolderFilter@5852605c, org.springframework.security.web.header.HeaderWriterFilter@46d2be66, org.springframework.web.filter.CorsFilter@4fd8aefe, org.springframework.security.web.authentication.logout.LogoutFilter@16a3d9a7, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@5e8359da, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@36b6802f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@4a59d584, org.springframework.security.web.session.SessionManagementFilter@32180efb, org.springframework.security.web.access.ExceptionTranslationFilter@2c2dfde3, org.springframework.security.web.access.intercept.AuthorizationFilter@42d4de20]
+2025-12-11 00:17:48 - ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-12-11 00:17:48 - ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-12-11 00:17:48 - Tomcat started on port 8080 (http) with context path ''
+2025-12-11 00:17:48 - Started ExpensesTrackerApiApplication in 4.042 seconds (process running for 4.391)
+2025-12-11 00:17:54 - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-12-11 00:17:54 - HikariPool-1 - Shutdown initiated...
+2025-12-11 00:17:54 - HikariPool-1 - Shutdown completed.
