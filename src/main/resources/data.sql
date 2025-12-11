@@ -12,17 +12,16 @@ CREATE TABLE IF NOT EXISTS users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create account table
--- UPDATED: Added color and card details columns
 CREATE TABLE IF NOT EXISTS account (
     account_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     account_name VARCHAR(100) NOT NULL,
     account_type VARCHAR(50) NOT NULL,
     balance DECIMAL(15,2) NOT NULL DEFAULT 0,
-    color VARCHAR(20) DEFAULT '#3B82F6', -- Added: Wallet Color
-    card_number VARCHAR(20),             -- Added: For card display
-    card_holder VARCHAR(100),            -- Added: Name on card
-    expiry_date VARCHAR(10),             -- Added: MM/YY
+    color VARCHAR(20) DEFAULT '#3B82F6',
+    card_number VARCHAR(20),
+    card_holder VARCHAR(100),
+    expiry_date VARCHAR(10),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -39,7 +38,6 @@ CREATE TABLE IF NOT EXISTS category (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create transaction table
--- UPDATED: Added priority column and transaction_type
 CREATE TABLE IF NOT EXISTS transaction (
     transaction_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     account_id BIGINT NOT NULL,
@@ -47,8 +45,8 @@ CREATE TABLE IF NOT EXISTS transaction (
     amount DECIMAL(15,2) NOT NULL,
     transaction_date DATE NOT NULL,
     description VARCHAR(255),
-    transaction_type VARCHAR(20),         -- Added to store INCOME/EXPENSE explicitly if needed
-    priority VARCHAR(20) DEFAULT 'Medium',-- Added: Priority Level
+    transaction_type VARCHAR(20),
+    priority VARCHAR(20) DEFAULT 'Medium',
     FOREIGN KEY (account_id) REFERENCES account(account_id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -74,7 +72,6 @@ ON DUPLICATE KEY UPDATE user_id=LAST_INSERT_ID(user_id);
 SET @user_id = (SELECT user_id FROM users WHERE email = 'admin@example.com' LIMIT 1);
 
 -- Insert test accounts
--- UPDATED: Added default color/card details
 INSERT INTO account (user_id, account_name, account_type, balance, color, card_number, card_holder, expiry_date, created_at)
 VALUES 
     (@user_id, 'Checking Account', 'BANK', 5000.00, '#3B82F6', '4532 **** **** 1234', 'Admin User', '12/28', NOW()),
@@ -86,11 +83,11 @@ ON DUPLICATE KEY UPDATE account_id=LAST_INSERT_ID(account_id);
 INSERT INTO category (user_id, name, type, classification, icon)
 VALUES 
     (NULL, 'Salary', 'INCOME', 'NEED', '💰'),
-    (NULL, 'Freelance', 'INCOME', 'WANT', '💵'),
+    (NULL, 'Freelance', 'INCOME', 'WANT', '💻'),
     (NULL, 'Groceries', 'EXPENSE', 'NEED', '🛒'),
     (NULL, 'Utilities', 'EXPENSE', 'NEED', '💡'),
     (NULL, 'Entertainment', 'EXPENSE', 'WANT', '🎬'),
-    (NULL, 'Transportation', 'EXPENSE', 'NEED', '🚗'),
+    (NULL, 'Transportation', 'EXPENSE', 'NEED', 'Bus'),
     (NULL, 'Savings', 'EXPENSE', NULL, '🏦')
 ON DUPLICATE KEY UPDATE category_id=LAST_INSERT_ID(category_id);
 
@@ -100,7 +97,6 @@ SET @grocery_cat = (SELECT category_id FROM category WHERE name = 'Groceries' LI
 SET @checking_acct = (SELECT account_id FROM account WHERE account_name = 'Checking Account' LIMIT 1);
 
 -- Insert test transactions
--- UPDATED: Added priority
 INSERT INTO transaction (account_id, category_id, amount, transaction_date, description, transaction_type, priority)
 VALUES 
     (@checking_acct, @salary_cat, 3000.00, CURDATE(), 'Monthly salary', 'INCOME', 'High'),
@@ -112,12 +108,3 @@ INSERT INTO budget (user_id, category_id, amount_limit, start_date, end_date)
 VALUES 
     (@user_id, @grocery_cat, 500.00, DATE_SUB(CURDATE(), INTERVAL 30 DAY), DATE_ADD(CURDATE(), INTERVAL 30 DAY))
 ON DUPLICATE KEY UPDATE budget_id=LAST_INSERT_ID(budget_id);
-
--- Create indexes for better query performance
-CREATE INDEX idx_account_user ON account(user_id);
-CREATE INDEX idx_category_user ON category(user_id);
-CREATE INDEX idx_transaction_account ON transaction(account_id);
-CREATE INDEX idx_transaction_category ON transaction(category_id);
-CREATE INDEX idx_transaction_date ON transaction(transaction_date);
-CREATE INDEX idx_budget_user ON budget(user_id);
-CREATE INDEX idx_budget_category ON budget(category_id);
