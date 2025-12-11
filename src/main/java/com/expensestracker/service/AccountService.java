@@ -1,17 +1,18 @@
 package com.expensestracker.service;
 
-import com.expensestracker.dto.request.AccountRequest;
-import com.expensestracker.dto.response.AccountResponse;
-import com.expensestracker.model.Account;
-import com.expensestracker.model.User;
-import com.expensestracker.repository.AccountRepository;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.expensestracker.dto.request.AccountRequest;
+import com.expensestracker.dto.response.AccountResponse;
+import com.expensestracker.model.Account;
+import com.expensestracker.model.User;
+import com.expensestracker.repository.AccountRepository;
 
 @Service
 public class AccountService {
@@ -30,13 +31,20 @@ public class AccountService {
     public AccountResponse createAccount(Long userId, AccountRequest request) {
         log.info("Creating account for user: {}", userId);
         
+        // Fix: Use userService instead of userRepository
         User user = userService.getUserById(userId);
         
         Account account = Account.builder()
                 .user(user)
                 .accountName(request.getAccountName())
-                .accountType(Account.AccountType.valueOf(request.getAccountType()))
+                // Fix: Handle enum conversion safely
+                .accountType(Account.AccountType.valueOf(request.getAccountType().toUpperCase().replace("-", "_")))
                 .balance(request.getBalance())
+                // Fix: Save Wallet Color and Card Details
+                .color(request.getColor())
+                .cardNumber(request.getCardNumber())
+                .cardHolder(request.getCardHolder())
+                .expiryDate(request.getExpiryDate())
                 .build();
         
         Account savedAccount = accountRepository.save(account);

@@ -28,9 +28,9 @@ public class TransactionService {
     private final UserService userService;
     
     public TransactionService(TransactionRepository transactionRepository, 
-                              AccountRepository accountRepository,
-                              CategoryRepository categoryRepository, 
-                              UserService userService) {
+                            AccountRepository accountRepository,
+                            CategoryRepository categoryRepository, 
+                            UserService userService) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.categoryRepository = categoryRepository;
@@ -51,25 +51,23 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         
         // 3. Create Transaction
-        // FIX 1: Set Transaction Type automatically from the Category
-        // FIX 2: Save the priority from the request
         Transaction transaction = Transaction.builder()
                 .account(account)
                 .category(category)
                 .amount(request.getAmount())
                 .description(request.getDescription())
                 .transactionDate(request.getTransactionDate())
+                // Auto-set Type from Category
                 .transactionType(Transaction.TransactionType.valueOf(category.getType().name())) 
+                // Set Priority
                 .priority(request.getPriority())
                 .build();
         
-        // 4. Update Account Balance based on CATEGORY Type
+        // 4. Update Account Balance
         if (category.getType() == Category.CategoryType.INCOME) {
             account.setBalance(account.getBalance().add(request.getAmount()));
-            log.info("Account balance increased by: {}", request.getAmount());
         } else {
             account.setBalance(account.getBalance().subtract(request.getAmount()));
-            log.info("Account balance decreased by: {}", request.getAmount());
         }
         
         accountRepository.save(account);
@@ -93,7 +91,6 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
         
-        // Check ownership via Account -> User
         if (!transaction.getAccount().getUser().getUserId().equals(userId)) {
             throw new RuntimeException("Access denied");
         }
@@ -111,7 +108,6 @@ public class TransactionService {
         }
         
         Account account = transaction.getAccount();
-        // Revert balance using Category Type
         if (transaction.getCategory().getType() == Category.CategoryType.INCOME) {
             account.setBalance(account.getBalance().subtract(transaction.getAmount()));
         } else {
@@ -131,12 +127,12 @@ public class TransactionService {
                 .accountId(transaction.getAccount().getAccountId())
                 .categoryName(transaction.getCategory().getName())
                 .categoryId(transaction.getCategory().getCategoryId())
-                .categoryType(transaction.getCategory().getType().name())
+                .categoryType(transaction.getCategory().getType().name()) 
                 .amount(transaction.getAmount())
-                .transactionType(transaction.getCategory().getType().name())
+                .transactionType(transaction.getCategory().getType().name()) 
                 .description(transaction.getDescription())
                 .transactionDate(transaction.getTransactionDate())
-                .priority(transaction.getPriority()) // Return priority to frontend
+                .priority(transaction.getPriority())
                 .build();
     }
 }
