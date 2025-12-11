@@ -65,16 +65,16 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
       }
     }
 
-    // Prepare payload
+    // Inside the handleSubmit function (around line 43):
+
     onAddTransaction({
       amount: parseFloat(amount),
       categoryId: finalCategoryId,
       description,
       accountId,
       transactionDate: date,
-      // MAP CLASSIFICATION TO PRIORITY
-      // 'need' -> 'High', 'want' -> 'Low'
-      priority: classification === 'need' ? 'High' : 'Low' 
+      // --- CHANGE 6: Send the priority (Map 'classification' to 'priority') ---
+      priority: classification === 'need' ? 'High' : 'Low'
     });
 
     // Reset form

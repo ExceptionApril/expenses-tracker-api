@@ -19,7 +19,7 @@ public class TransactionRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     private BigDecimal amount;
     
-    // Validation removed so Backend can derive it from Category
+    // Optional: Derived from Category
     private String transactionType;
     
     @Size(max = 500, message = "Description must not exceed 500 characters")
@@ -28,16 +28,14 @@ public class TransactionRequest {
     @NotNull(message = "Transaction date is required")
     private LocalDate transactionDate;
 
-    // Added Priority field matching Database VARCHAR(20)
-    @Size(max = 20, message = "Priority must not exceed 20 characters")
-    private String priority;
+    // Added Field
+    private String priority; 
     
     public TransactionRequest() {
     }
     
     public TransactionRequest(Long accountId, Long categoryId, BigDecimal amount, 
-                            String transactionType, String description, LocalDate transactionDate,
-                            String priority) {
+                            String transactionType, String description, LocalDate transactionDate, String priority) {
         this.accountId = accountId;
         this.categoryId = categoryId;
         this.amount = amount;
@@ -47,61 +45,25 @@ public class TransactionRequest {
         this.priority = priority;
     }
     
-    // --- Getters and Setters ---
+    // --- CRITICAL: GETTERS AND SETTERS ---
+    public Long getAccountId() { return accountId; }
+    public void setAccountId(Long accountId) { this.accountId = accountId; }
     
-    public Long getAccountId() {
-        return accountId;
-    }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
     
-    public void setAccountId(Long accountId) {
-        this.accountId = accountId;
-    }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
     
-    public Long getCategoryId() {
-        return categoryId;
-    }
+    public String getTransactionType() { return transactionType; }
+    public void setTransactionType(String transactionType) { this.transactionType = transactionType; }
     
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
     
-    public BigDecimal getAmount() {
-        return amount;
-    }
-    
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-    
-    public String getTransactionType() {
-        return transactionType;
-    }
-    
-    public void setTransactionType(String transactionType) {
-        this.transactionType = transactionType;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public LocalDate getTransactionDate() {
-        return transactionDate;
-    }
-    
-    public void setTransactionDate(LocalDate transactionDate) {
-        this.transactionDate = transactionDate;
-    }
+    public LocalDate getTransactionDate() { return transactionDate; }
+    public void setTransactionDate(LocalDate transactionDate) { this.transactionDate = transactionDate; }
 
-    public String getPriority() {
-        return priority;
-    }
-
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
 }
