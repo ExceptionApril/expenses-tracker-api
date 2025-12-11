@@ -19,7 +19,8 @@ public class TransactionRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     private BigDecimal amount;
     
-    // Optional: Derived from Category
+    // ✅ CORRECT: No @NotBlank here. 
+    // This allows the Service to derive it from the Category.
     private String transactionType;
     
     @Size(max = 500, message = "Description must not exceed 500 characters")
@@ -28,7 +29,7 @@ public class TransactionRequest {
     @NotNull(message = "Transaction date is required")
     private LocalDate transactionDate;
 
-    // Added Field
+    // ✅ CORRECT: Field exists to capture priority from frontend
     private String priority; 
     
     public TransactionRequest() {
@@ -45,7 +46,7 @@ public class TransactionRequest {
         this.priority = priority;
     }
     
-    // --- CRITICAL: GETTERS AND SETTERS ---
+    // Getters and Setters match perfectly
     public Long getAccountId() { return accountId; }
     public void setAccountId(Long accountId) { this.accountId = accountId; }
     
