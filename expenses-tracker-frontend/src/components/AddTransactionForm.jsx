@@ -6,7 +6,8 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
   const [categoryInput, setCategoryInput] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [description, setDescription] = useState('');
-  const [accountId, setAccountId] = useState(wallets[0]?.id || '');
+  // Safety check: handle case where wallets array might be empty initially
+  const [accountId, setAccountId] = useState(wallets && wallets.length > 0 ? wallets[0].id : '');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [classification, setClassification] = useState('need');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -25,13 +26,17 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
   const handleSelectCategory = (cat) => {
     setCategoryInput(cat.name);
     setCategoryId(cat.id);
-    setClassification(cat.classification);
+    // Auto-select classification based on the category's default
+    if (cat.classification) {
+        setClassification(cat.classification.toLowerCase());
+    }
     setShowSuggestions(false);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validate inputs
     if (!amount || !categoryInput || !accountId) return;
 
     let finalCategoryId = categoryId;
@@ -44,6 +49,10 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
 
       if (existingCategory) {
         finalCategoryId = existingCategory.id;
+        // Update classification if existing category found
+        if(existingCategory.classification) {
+            setClassification(existingCategory.classification.toLowerCase());
+        }
       } else {
         // Create new category
         const newCategoryId = Date.now().toString();
@@ -56,12 +65,16 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
       }
     }
 
+    // Prepare payload
     onAddTransaction({
       amount: parseFloat(amount),
       categoryId: finalCategoryId,
       description,
       accountId,
       transactionDate: date,
+      // MAP CLASSIFICATION TO PRIORITY
+      // 'need' -> 'High', 'want' -> 'Low'
+      priority: classification === 'need' ? 'High' : 'Low' 
     });
 
     // Reset form
@@ -129,11 +142,11 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
                   >
                     <span className="text-gray-900">{cat.name}</span>
                     <span className={`text-xs px-2 py-0.5 rounded ${
-                      cat.classification === 'need' 
+                      (cat.classification || 'need').toLowerCase() === 'need' 
                         ? 'bg-blue-100 text-blue-700' 
                         : 'bg-orange-100 text-orange-700'
                     }`}>
-                      {cat.classification === 'need' ? 'Need' : 'Want'}
+                      {(cat.classification === 'need' ? 'Need' : 'Want')}
                     </span>
                   </button>
                 ))}
@@ -152,6 +165,7 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
+              <option value="">Select Wallet</option>
               {wallets.map(w => (
                 <option key={w.id} value={w.id}>{w.accountName}</option>
               ))}
@@ -173,38 +187,38 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
           </div>
         </div>
 
-        {/* Classification - only show if typing new category */}
-        {categoryInput && !categoryId && (
-          <div>
-            <label className="block text-sm text-gray-700 mb-2">
-              New Category Type
+        {/* Classification / Priority Selector
+            Always visible so user can override priority even for existing categories 
+        */}
+        <div>
+          <label className="block text-sm text-gray-700 mb-2">
+            Classification (Priority)
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="classification"
+                value="need"
+                checked={classification === 'need'}
+                onChange={(e) => setClassification(e.target.value)}
+                className="w-4 h-4 text-blue-500"
+              />
+              <span className="text-sm text-gray-700">Need (High Priority)</span>
             </label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="classification"
-                  value="need"
-                  checked={classification === 'need'}
-                  onChange={(e) => setClassification(e.target.value)}
-                  className="w-4 h-4 text-blue-500"
-                />
-                <span className="text-sm text-gray-700">Need</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="classification"
-                  value="want"
-                  checked={classification === 'want'}
-                  onChange={(e) => setClassification(e.target.value)}
-                  className="w-4 h-4 text-orange-500"
-                />
-                <span className="text-sm text-gray-700">Want</span>
-              </label>
-            </div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="classification"
+                value="want"
+                checked={classification === 'want'}
+                onChange={(e) => setClassification(e.target.value)}
+                className="w-4 h-4 text-orange-500"
+              />
+              <span className="text-sm text-gray-700">Want (Low Priority)</span>
+            </label>
           </div>
-        )}
+        </div>
 
         {/* Description */}
         <div>

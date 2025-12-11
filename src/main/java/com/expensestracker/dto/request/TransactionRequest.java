@@ -1,8 +1,11 @@
 package com.expensestracker.dto.request;
 
-import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class TransactionRequest {
     
@@ -16,8 +19,7 @@ public class TransactionRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     private BigDecimal amount;
     
-    @NotBlank(message = "Transaction type is required")
-    @Pattern(regexp = "INCOME|EXPENSE", message = "Transaction type must be INCOME or EXPENSE")
+    // Validation removed so Backend can derive it from Category
     private String transactionType;
     
     @Size(max = 500, message = "Description must not exceed 500 characters")
@@ -25,19 +27,27 @@ public class TransactionRequest {
     
     @NotNull(message = "Transaction date is required")
     private LocalDate transactionDate;
+
+    // Added Priority field matching Database VARCHAR(20)
+    @Size(max = 20, message = "Priority must not exceed 20 characters")
+    private String priority;
     
     public TransactionRequest() {
     }
     
     public TransactionRequest(Long accountId, Long categoryId, BigDecimal amount, 
-                            String transactionType, String description, LocalDate transactionDate) {
+                            String transactionType, String description, LocalDate transactionDate,
+                            String priority) {
         this.accountId = accountId;
         this.categoryId = categoryId;
         this.amount = amount;
         this.transactionType = transactionType;
         this.description = description;
         this.transactionDate = transactionDate;
+        this.priority = priority;
     }
+    
+    // --- Getters and Setters ---
     
     public Long getAccountId() {
         return accountId;
@@ -85,5 +95,13 @@ public class TransactionRequest {
     
     public void setTransactionDate(LocalDate transactionDate) {
         this.transactionDate = transactionDate;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 }

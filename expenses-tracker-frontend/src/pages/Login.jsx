@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 export function Login() {
+  // 1. Add state for Name
+  const [name, setName] = useState(''); 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -17,6 +19,13 @@ export function Login() {
     setError('');
     setLoading(true);
 
+    // 2. Prepare the payload
+    // If Registering: Send name, email, password
+    // If Logging in: Send email, password
+    const payload = isLogin 
+      ? { email, password }
+      : { name, email, password };
+
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -24,15 +33,13 @@ export function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(payload), // 3. Use the correct payload
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle validation errors from backend
         setError(data.message || 'Authentication failed');
         return;
       }
@@ -43,7 +50,14 @@ export function Login() {
         if (data.data.user) {
           localStorage.setItem('user', JSON.stringify(data.data.user));
         }
-        // Dispatch event to trigger auth change
+        
+        // Save User ID specifically if needed by other components
+        if (data.data.userId) {
+            localStorage.setItem('userId', data.data.userId);
+        } else if (data.data.user && data.data.user.userId) {
+            localStorage.setItem('userId', data.data.user.userId);
+        }
+
         window.dispatchEvent(new Event('authChanged'));
         navigate('/dashboard');
       } else {
@@ -67,6 +81,22 @@ export function Login() {
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
+          
+          {/* 4. Add Name Input Field (Only show when Registering) */}
+          {!isLogin && (
+            <div className="form-group">
+              <label htmlFor="name">Full Name</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                required={!isLogin} // Required only for registration
+              />
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -105,6 +135,7 @@ export function Login() {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
+                setName(''); // Clear name when switching modes
               }}
             >
               {isLogin ? 'Register' : 'Login'}

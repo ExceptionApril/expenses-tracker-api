@@ -1,16 +1,21 @@
 package com.expensestracker.service;
 
-import com.expensestracker.dto.request.TransactionRequest;
-import com.expensestracker.dto.response.TransactionResponse;
-import com.expensestracker.model.*;
-import com.expensestracker.repository.*;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import com.expensestracker.dto.request.TransactionRequest;
+import com.expensestracker.dto.response.TransactionResponse;
+import com.expensestracker.model.Account;
+import com.expensestracker.model.Category;
+import com.expensestracker.model.Transaction;
+import com.expensestracker.repository.AccountRepository;
+import com.expensestracker.repository.CategoryRepository;
+import com.expensestracker.repository.TransactionRepository;
 
 @Service
 public class TransactionService {
@@ -23,9 +28,9 @@ public class TransactionService {
     private final UserService userService;
     
     public TransactionService(TransactionRepository transactionRepository, 
-                            AccountRepository accountRepository,
-                            CategoryRepository categoryRepository, 
-                            UserService userService) {
+                              AccountRepository accountRepository,
+                              CategoryRepository categoryRepository, 
+                              UserService userService) {
         this.transactionRepository = transactionRepository;
         this.accountRepository = accountRepository;
         this.categoryRepository = categoryRepository;
@@ -45,13 +50,17 @@ public class TransactionService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         
-        // 3. Create Transaction (NO transactionType here, it comes from Category)
+        // 3. Create Transaction
+        // FIX 1: Set Transaction Type automatically from the Category
+        // FIX 2: Save the priority from the request
         Transaction transaction = Transaction.builder()
                 .account(account)
                 .category(category)
                 .amount(request.getAmount())
                 .description(request.getDescription())
                 .transactionDate(request.getTransactionDate())
+                .transactionType(Transaction.TransactionType.valueOf(category.getType().name())) 
+                .priority(request.getPriority())
                 .build();
         
         // 4. Update Account Balance based on CATEGORY Type
@@ -119,14 +128,15 @@ public class TransactionService {
         return TransactionResponse.builder()
                 .transactionId(transaction.getTransactionId())
                 .accountName(transaction.getAccount().getAccountName())
+                .accountId(transaction.getAccount().getAccountId())
                 .categoryName(transaction.getCategory().getName())
-                // Type is derived from the Category
-                .categoryType(transaction.getCategory().getType().name()) 
+                .categoryId(transaction.getCategory().getCategoryId())
+                .categoryType(transaction.getCategory().getType().name())
                 .amount(transaction.getAmount())
-                // Use Category Type for the response "transactionType" field
-                .transactionType(transaction.getCategory().getType().name()) 
+                .transactionType(transaction.getCategory().getType().name())
                 .description(transaction.getDescription())
                 .transactionDate(transaction.getTransactionDate())
+                .priority(transaction.getPriority()) // Return priority to frontend
                 .build();
     }
 }

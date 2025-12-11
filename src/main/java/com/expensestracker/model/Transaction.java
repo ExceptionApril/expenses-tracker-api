@@ -1,8 +1,19 @@
 package com.expensestracker.model;
 
-import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "transaction")
@@ -33,6 +44,10 @@ public class Transaction {
     @Column(name = "transaction_type")
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
+
+    // --- NEW FIELD ---
+    @Column(length = 20)
+    private String priority;
 
     public Transaction() {
     }
@@ -103,6 +118,15 @@ public class Transaction {
         this.transactionType = transactionType;
     }
 
+    // --- NEW GETTER AND SETTER ---
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
     public static TransactionBuilder builder() {
         return new TransactionBuilder();
     }
@@ -115,6 +139,7 @@ public class Transaction {
         private LocalDate transactionDate;
         private String description;
         private TransactionType transactionType;
+        private String priority; // Added to Builder
 
         public TransactionBuilder transactionId(Long transactionId) {
             this.transactionId = transactionId;
@@ -151,9 +176,16 @@ public class Transaction {
             return this;
         }
 
+        // Added priority builder method
+        public TransactionBuilder priority(String priority) {
+            this.priority = priority;
+            return this;
+        }
+
         public Transaction build() {
             Transaction transaction = new Transaction(transactionId, account, category, amount, transactionDate, description);
             transaction.setTransactionType(transactionType);
+            transaction.setPriority(priority); // Set the priority
             return transaction;
         }
     }
