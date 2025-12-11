@@ -1,1 +1,56 @@
 node_modules/ 
+# Node modules (Frontend)
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+target/
+out/
+
+# Java compiled files
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.iws
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+application-local.properties
+
+# Logs
+*.log
+logs/
+
+# Maven/Gradle
+.gradle/
+.mvn/
+mvnw
+mvnw.cmd
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
