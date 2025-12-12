@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 export function Login() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
@@ -10,7 +11,7 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const API_BASE_URL = 'http://localhost:8080/api';
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,15 +20,16 @@ export function Login() {
 
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
+      const requestBody = isLogin 
+        ? { email, password }
+        : { name, email, password };
+      
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -40,9 +42,14 @@ export function Login() {
       // Store auth token and user info
       if (data.data && data.data.token) {
         localStorage.setItem('token', data.data.token);
-        if (data.data.user) {
-          localStorage.setItem('user', JSON.stringify(data.data.user));
-        }
+        // Store user data with userId for API calls
+        const userData = {
+          userId: data.data.userId,
+          email: data.data.email,
+          name: data.data.name,
+          token: data.data.token
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
         // Dispatch event to trigger auth change
         window.dispatchEvent(new Event('authChanged'));
         navigate('/dashboard');
@@ -67,6 +74,22 @@ export function Login() {
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
+          {!isLogin && (
+            <div className="form-group">
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                required={!isLogin}
+                minLength={2}
+                maxLength={100}
+              />
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -88,6 +111,7 @@ export function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
+              minLength={6}
             />
           </div>
 
@@ -105,6 +129,7 @@ export function Login() {
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
+                setName('');
               }}
             >
               {isLogin ? 'Register' : 'Login'}

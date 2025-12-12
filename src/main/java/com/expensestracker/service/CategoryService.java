@@ -32,12 +32,13 @@ public class CategoryService {
         
         User user = userService.getUserById(userId);
         
-        Category category = Category.builder()
-                .user(user)
-                .name(request.getCategoryName())
-                .type(Category.CategoryType.valueOf(request.getCategoryType()))
-                .icon(request.getIcon())
-                .build();
+        Category category = new Category();
+        category.setUser(user);
+        category.setName(request.getCategoryName());
+        category.setType(Category.CategoryType.valueOf(request.getCategoryType()));
+        if (request.getClassification() != null) {
+            category.setClassification(Category.CategoryClassification.valueOf(request.getClassification().toUpperCase()));
+        }
         
         Category savedCategory = categoryRepository.save(category);
         log.info("Category created with ID: {}", savedCategory.getCategoryId());
@@ -47,7 +48,7 @@ public class CategoryService {
     
     @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories(Long userId) {
-        return categoryRepository.findByUserIsNull()
+        return categoryRepository.findByUserIdOrSystemCategories(userId)
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -79,7 +80,7 @@ public class CategoryService {
                 .categoryId(category.getCategoryId())
                 .categoryName(category.getName())
                 .categoryType(category.getType().name())
-                .icon(category.getIcon())
+                .classification(category.getClassification() != null ? category.getClassification().name() : "WANT")
                 .isSystemCategory(category.getUser() == null)
                 .build();
     }

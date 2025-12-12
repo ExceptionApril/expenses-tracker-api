@@ -18,11 +18,11 @@ export function Transactions({
     const csv = [
       ['Date', 'Category', 'Classification', 'Description', 'Amount', 'Wallet'],
       ...transactions.map(t => {
-        const category = categories.find(c => c.id === t.categoryId);
-        const wallet = wallets.find(w => w.id === t.accountId);
+        const category = categories.find(c => c.categoryId === t.categoryId);
+        const wallet = wallets.find(w => w.accountId === t.accountId);
         return [
           t.transactionDate,
-          category?.name || 'Unknown',
+          category?.categoryName || 'Unknown',
           category?.classification || 'want',
           t.description,
           t.amount.toString(),
@@ -39,16 +39,16 @@ export function Transactions({
     a.click();
   };
 
-  const totalExpenses = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = transactions.reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount || 0)), 0);
   
   // Calculate need vs want
   const needExpenses = transactions
-    .filter(t => categories.find(c => c.id === t.categoryId)?.classification === 'need')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => categories.find(c => c.categoryId === t.categoryId)?.classification === 'need')
+    .reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount || 0)), 0);
   
   const wantExpenses = transactions
-    .filter(t => categories.find(c => c.id === t.categoryId)?.classification === 'want')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => categories.find(c => c.categoryId === t.categoryId)?.classification === 'want')
+    .reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount || 0)), 0);
 
   return (
     <div className="flex-1 overflow-auto">

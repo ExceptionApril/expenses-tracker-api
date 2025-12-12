@@ -2,15 +2,15 @@ import { Trash2, ArrowUpRight } from 'lucide-react';
 
 export function TransactionList({ transactions, wallets, categories, onDelete }) {
   const getWalletName = (walletId) => {
-    return wallets.find(w => w.id === walletId)?.accountName || 'Unknown';
+    return wallets.find(w => w.accountId === walletId)?.accountName || 'Unknown';
   };
 
   const getCategoryName = (categoryId) => {
-    return categories.find(c => c.id === categoryId)?.name || 'Unknown';
+    return categories.find(c => c.categoryId === categoryId)?.categoryName || 'Unknown';
   };
 
   const getCategoryClassification = (categoryId) => {
-    return categories.find(c => c.id === categoryId)?.classification || 'want';
+    return categories.find(c => c.categoryId === categoryId)?.classification || 'want';
   };
 
   const formatDate = (dateString) => {
@@ -37,7 +37,7 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
         const classification = getCategoryClassification(transaction.categoryId);
         return (
           <div
-            key={transaction.id}
+            key={transaction.transactionId}
             className="p-4 hover:bg-gray-50 transition-colors group"
           >
             <div className="flex items-center justify-between">
@@ -51,7 +51,7 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="text-gray-900 truncate">
-                      {getCategoryName(transaction.categoryId)}
+                      {transaction.categoryName || getCategoryName(transaction.categoryId)}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded ${
                       classification === 'need' 
@@ -61,7 +61,7 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
                       {classification === 'need' ? 'Need' : 'Want'}
                     </span>
                     <span className="text-sm text-gray-500 px-2 py-0.5 bg-gray-100 rounded">
-                      {getWalletName(transaction.accountId)}
+                      {transaction.accountName || getWalletName(transaction.accountId)}
                     </span>
                   </div>
                   {transaction.description && (
@@ -77,13 +77,13 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
                 {/* Amount */}
                 <div className="text-right">
                   <div className="text-red-600">
-                    -${transaction.amount.toFixed(2)}
+                    -${(typeof transaction.amount === 'number' ? transaction.amount : parseFloat(transaction.amount || 0)).toFixed(2)}
                   </div>
                 </div>
 
                 {/* Delete Button */}
                 <button
-                  onClick={() => onDelete(transaction.id)}
+                  onClick={() => onDelete(transaction.transactionId)}
                   className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-50 rounded-lg transition-all"
                   title="Delete transaction"
                 >

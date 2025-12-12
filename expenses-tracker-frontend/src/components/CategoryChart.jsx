@@ -3,21 +3,25 @@ import { PieChart } from 'lucide-react';
 export function CategoryChart({ transactions, categories }) {
   // Calculate category totals using category IDs
   const categoryTotals = transactions.reduce((acc, transaction) => {
-    acc[transaction.categoryId] = (acc[transaction.categoryId] || 0) + transaction.amount;
+    const amount = typeof transaction.amount === 'number' ? transaction.amount : parseFloat(transaction.amount || 0);
+    acc[transaction.categoryId] = (acc[transaction.categoryId] || 0) + amount;
     return acc;
   }, {});
 
-  const totalExpenses = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = transactions.reduce((sum, t) => {
+    const amount = typeof t.amount === 'number' ? t.amount : parseFloat(t.amount || 0);
+    return sum + amount;
+  }, 0);
 
   // Sort categories by amount and get category names
   const sortedCategories = Object.entries(categoryTotals)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([catId, amount]) => {
-      const category = categories.find(c => c.id === catId);
+      const category = categories.find(c => c.categoryId === catId);
       return {
         id: catId,
-        name: category?.name || 'Unknown',
+        name: category?.categoryName || 'Unknown',
         amount,
         classification: category?.classification || 'want'
       };

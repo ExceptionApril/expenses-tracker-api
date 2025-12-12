@@ -47,17 +47,17 @@ export function Budget({ budgets, categories, transactions, onAddBudget, onUpdat
   };
 
   const getCategoryName = (categoryId) => {
-    return categories.find(c => c.id === categoryId)?.name || 'Unknown';
+    return categories.find(c => c.categoryId === categoryId)?.categoryName || 'Unknown';
   };
 
   const getCategorySpending = (categoryId) => {
     return monthlyTransactions
       .filter(t => t.categoryId === categoryId)
-      .reduce((sum, t) => sum + t.amount, 0);
+      .reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount || 0)), 0);
   };
 
-  const totalBudget = activeBudgets.reduce((sum, b) => sum + b.amountLimit, 0);
-  const totalSpent = monthlyTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalBudget = activeBudgets.reduce((sum, b) => sum + (typeof b.amountLimit === 'number' ? b.amountLimit : parseFloat(b.amountLimit || 0)), 0);
+  const totalSpent = monthlyTransactions.reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount || 0)), 0);
   const totalRemaining = totalBudget - totalSpent;
   const totalPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
@@ -191,8 +191,8 @@ export function Budget({ budgets, categories, transactions, onAddBudget, onUpdat
                       >
                         <option value="">Select category</option>
                         {categories.map(cat => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name} ({cat.classification === 'need' ? 'Need' : 'Want'})
+                          <option key={cat.categoryId} value={cat.categoryId}>
+                            {cat.categoryName} ({cat.classification === 'need' ? 'Need' : 'Want'})
                           </option>
                         ))}
                       </select>
@@ -259,16 +259,17 @@ export function Budget({ budgets, categories, transactions, onAddBudget, onUpdat
                   </div>
                 ) : (
                   activeBudgets.map((budget) => {
-                    const category = categories.find(c => c.id === budget.categoryId);
+                    const category = categories.find(c => c.categoryId === budget.categoryId);
                     const spent = getCategorySpending(budget.categoryId);
-                    const percentage = (spent / budget.amountLimit) * 100;
-                    const remaining = budget.amountLimit - spent;
+                    const amount = typeof budget.amountLimit === 'number' ? budget.amountLimit : parseFloat(budget.amountLimit || 0);
+                    const percentage = (spent / amount) * 100;
+                    const remaining = amount - spent;
 
                     return (
-                      <div key={budget.id} className="border-b border-gray-200 pb-6 last:border-0">
+                      <div key={budget.budgetId} className="border-b border-gray-200 pb-6 last:border-0">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-900">{category?.name || 'Unknown'}</span>
+                            <span className="text-gray-900">{category?.categoryName || 'Unknown'}</span>
                             <span className={`text-xs px-2 py-0.5 rounded ${
                               category?.classification === 'need' 
                                 ? 'bg-blue-100 text-blue-700' 
@@ -279,7 +280,7 @@ export function Budget({ budgets, categories, transactions, onAddBudget, onUpdat
                           </div>
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => onDeleteBudget(budget.id)}
+                              onClick={() => onDeleteBudget(budget.budgetId)}
                               className="p-2 hover:bg-red-50 rounded-lg transition-colors"
                             >
                               <Trash2 className="w-4 h-4 text-red-500" />
@@ -289,7 +290,7 @@ export function Budget({ budgets, categories, transactions, onAddBudget, onUpdat
                         
                         <div className="flex items-center justify-between text-sm mb-2">
                           <span className="text-gray-600">
-                            ${spent.toFixed(2)} / ${budget.amountLimit.toFixed(2)}
+                            ${spent.toFixed(2)} / ${amount.toFixed(2)}
                           </span>
                           <span className={`${
                             percentage > 100 ? 'text-red-600' :

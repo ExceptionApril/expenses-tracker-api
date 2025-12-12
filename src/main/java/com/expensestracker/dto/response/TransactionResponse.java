@@ -5,6 +5,8 @@ import java.time.LocalDate;
 
 public class TransactionResponse {
     private Long transactionId;
+    private Long accountId;
+    private Long categoryId;
     private String accountName;
     private String categoryName;
     private String categoryType;
@@ -16,10 +18,12 @@ public class TransactionResponse {
     public TransactionResponse() {
     }
     
-    public TransactionResponse(Long transactionId, String accountName, String categoryName, 
+    public TransactionResponse(Long transactionId, Long accountId, Long categoryId, String accountName, String categoryName, 
                               String categoryType, BigDecimal amount, String transactionType, 
                               String description, LocalDate transactionDate) {
         this.transactionId = transactionId;
+        this.accountId = accountId;
+        this.categoryId = categoryId;
         this.accountName = accountName;
         this.categoryName = categoryName;
         this.categoryType = categoryType;
@@ -35,6 +39,8 @@ public class TransactionResponse {
     
     public static class TransactionResponseBuilder {
         private Long transactionId;
+        private Long accountId;
+        private Long categoryId;
         private String accountName;
         private String categoryName;
         private String categoryType;
@@ -45,6 +51,16 @@ public class TransactionResponse {
         
         public TransactionResponseBuilder transactionId(Long transactionId) {
             this.transactionId = transactionId;
+            return this;
+        }
+        
+        public TransactionResponseBuilder accountId(Long accountId) {
+            this.accountId = accountId;
+            return this;
+        }
+        
+        public TransactionResponseBuilder categoryId(Long categoryId) {
+            this.categoryId = categoryId;
             return this;
         }
         
@@ -84,7 +100,7 @@ public class TransactionResponse {
         }
         
         public TransactionResponse build() {
-            return new TransactionResponse(transactionId, accountName, categoryName, 
+            return new TransactionResponse(transactionId, accountId, categoryId, accountName, categoryName, 
                                           categoryType, amount, transactionType, description, transactionDate);
         }
     }
@@ -97,14 +113,22 @@ public class TransactionResponse {
         this.transactionId = transactionId;
     }
     
-    public String getAccountName() {
-        return accountName;
+    public Long getAccountId() {
+        return accountId;
     }
-    
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
-    
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
     public String getCategoryName() {
         return categoryName;
     }

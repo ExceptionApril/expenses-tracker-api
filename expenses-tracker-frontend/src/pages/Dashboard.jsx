@@ -14,7 +14,7 @@ export function Dashboard({
   onAddCategory,
   onUpdateBudget 
 }) {
-  const totalBalance = wallets.reduce((sum, wallet) => sum + wallet.balance, 0);
+  const totalBalance = wallets.reduce((sum, wallet) => sum + (wallet.balance || 0), 0);
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
@@ -24,7 +24,7 @@ export function Dashboard({
     return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
   });
 
-  const monthlyExpenses = monthlyTransactions.reduce((sum, t) => sum + t.amount, 0);
+  const monthlyExpenses = monthlyTransactions.reduce((sum, t) => sum + (t.amount || 0), 0);
 
   // Calculate total monthly budget
   const totalMonthlyBudget = budgets
@@ -34,7 +34,7 @@ export function Dashboard({
       const now = new Date();
       return now >= start && now <= end;
     })
-    .reduce((sum, b) => sum + b.amountLimit, 0);
+    .reduce((sum, b) => sum + (b.amountLimit || 0), 0);
 
   const recentTransactions = transactions.slice(0, 5);
 
@@ -47,21 +47,21 @@ export function Dashboard({
   };
 
   const getCategoryName = (categoryId) => {
-    return categories.find(c => c.id === categoryId)?.name || 'Unknown';
+    return categories.find(c => c.categoryId === categoryId)?.categoryName || 'Unknown';
   };
 
   const getCategoryClassification = (categoryId) => {
-    return categories.find(c => c.id === categoryId)?.classification || 'want';
+    return categories.find(c => c.categoryId === categoryId)?.classification || 'want';
   };
 
   // Group expenses by Need vs Want
   const needExpenses = monthlyTransactions
     .filter(t => getCategoryClassification(t.categoryId) === 'need')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
   
   const wantExpenses = monthlyTransactions
     .filter(t => getCategoryClassification(t.categoryId) === 'want')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -144,15 +144,15 @@ export function Dashboard({
                   </div>
                 ) : (
                   recentTransactions.map(transaction => {
-                    const category = categories.find(c => c.id === transaction.categoryId);
+                    const category = categories.find(c => c.categoryId === transaction.categoryId);
                     return (
-                      <div key={transaction.id} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div key={transaction.transactionId} className="p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-100">
                             <ArrowUpRight className="w-5 h-5 text-red-600" />
                           </div>
                           <div className="flex-1">
-                            <div className="text-gray-900">{category?.name || 'Unknown'}</div>
+                            <div className="text-gray-900">{transaction.categoryName || 'Unknown'}</div>
                             <div className="text-sm text-gray-500">
                               {formatDate(transaction.transactionDate)} • {category?.classification === 'need' ? 'Need' : 'Want'}
                             </div>
@@ -193,7 +193,7 @@ export function Dashboard({
                   {wallets
                     .filter(w => w.accountType !== 'credit-card' && w.accountType !== 'debit-card')
                     .map(wallet => (
-                      <WalletCard key={wallet.id} wallet={wallet} />
+                      <WalletCard key={wallet.accountId} wallet={wallet} />
                     ))
                   }
                 </div>

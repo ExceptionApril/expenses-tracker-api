@@ -28,9 +28,6 @@ public class Category {
     @Column(name = "classification", length = 20)
     private CategoryClassification classification;
     
-    @Column(length = 50)
-    private String icon;
-    
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Transaction> transactions = new ArrayList<>();
 
@@ -41,14 +38,13 @@ public class Category {
     }
 
     public Category(Long categoryId, User user, String name, CategoryType type, 
-                    CategoryClassification classification, String icon, 
+                    CategoryClassification classification, 
                     List<Transaction> transactions, List<Budget> budgets) {
         this.categoryId = categoryId;
         this.user = user;
         this.name = name;
         this.type = type;
         this.classification = classification;
-        this.icon = icon;
         this.transactions = transactions;
         this.budgets = budgets;
     }
@@ -93,14 +89,6 @@ public class Category {
         this.classification = classification;
     }
 
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
-
     public List<Transaction> getTransactions() {
         return transactions;
     }
@@ -127,7 +115,6 @@ public class Category {
         private String name;
         private CategoryType type;
         private CategoryClassification classification;
-        private String icon;
         private List<Transaction> transactions = new ArrayList<>();
         private List<Budget> budgets = new ArrayList<>();
 
@@ -166,11 +153,6 @@ public class Category {
             return this;
         }
 
-        public CategoryBuilder icon(String icon) {
-            this.icon = icon;
-            return this;
-        }
-
         public CategoryBuilder transactions(List<Transaction> transactions) {
             this.transactions = transactions;
             return this;
@@ -182,7 +164,7 @@ public class Category {
         }
 
         public Category build() {
-            return new Category(categoryId, user, name, type, classification, icon, transactions, budgets);
+            return new Category(categoryId, user, name, type, classification, transactions, budgets);
         }
     }
     

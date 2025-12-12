@@ -78,7 +78,6 @@ public class DataInitializer implements CommandLineRunner {
                 .user(admin)
                 .name("Groceries")
                 .type(Category.CategoryType.EXPENSE)
-                .icon("shopping-cart")
                 .build();
         groceries = categoryRepository.save(groceries);
 
@@ -86,7 +85,6 @@ public class DataInitializer implements CommandLineRunner {
                 .user(admin)
                 .name("Salary")
                 .type(Category.CategoryType.INCOME)
-                .icon("wallet")
                 .build();
         salary = categoryRepository.save(salary);
 

@@ -45,13 +45,15 @@ public class TransactionService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         
-        // 3. Create Transaction (NO transactionType here, it comes from Category)
+        // 3. Create Transaction with proper transaction type
+        Transaction.TransactionType txType = Transaction.TransactionType.valueOf(request.getTransactionType());
         Transaction transaction = Transaction.builder()
                 .account(account)
                 .category(category)
                 .amount(request.getAmount())
                 .description(request.getDescription())
                 .transactionDate(request.getTransactionDate())
+                .transactionType(txType)
                 .build();
         
         // 4. Update Account Balance based on CATEGORY Type
@@ -118,13 +120,13 @@ public class TransactionService {
     private TransactionResponse mapToResponse(Transaction transaction) {
         return TransactionResponse.builder()
                 .transactionId(transaction.getTransactionId())
+                .accountId(transaction.getAccount().getAccountId())
+                .categoryId(transaction.getCategory().getCategoryId())
                 .accountName(transaction.getAccount().getAccountName())
                 .categoryName(transaction.getCategory().getName())
-                // Type is derived from the Category
                 .categoryType(transaction.getCategory().getType().name()) 
                 .amount(transaction.getAmount())
-                // Use Category Type for the response "transactionType" field
-                .transactionType(transaction.getCategory().getType().name()) 
+                .transactionType(transaction.getTransactionType().name())
                 .description(transaction.getDescription())
                 .transactionDate(transaction.getTransactionDate())
                 .build();

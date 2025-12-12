@@ -6,14 +6,14 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
   const [categoryInput, setCategoryInput] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [description, setDescription] = useState('');
-  const [accountId, setAccountId] = useState(wallets[0]?.id || '');
+  const [accountId, setAccountId] = useState(wallets[0]?.accountId || '');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [classification, setClassification] = useState('need');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Filter categories based on input
   const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(categoryInput.toLowerCase())
+    cat.categoryName?.toLowerCase().includes(categoryInput.toLowerCase())
   );
 
   const handleCategoryInputChange = (value) => {
@@ -23,9 +23,9 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
   };
 
   const handleSelectCategory = (cat) => {
-    setCategoryInput(cat.name);
-    setCategoryId(cat.id);
-    setClassification(cat.classification);
+    setCategoryInput(cat.categoryName);
+    setCategoryId(cat.categoryId);
+    setClassification(cat.classification || 'want');
     setShowSuggestions(false);
   };
 
@@ -39,20 +39,21 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
     // If user typed a custom category (not selected from dropdown)
     if (!categoryId && onAddCategory) {
       const existingCategory = categories.find(
-        c => c.name.toLowerCase() === categoryInput.toLowerCase()
+        c => c.categoryName?.toLowerCase() === categoryInput.toLowerCase()
       );
 
       if (existingCategory) {
-        finalCategoryId = existingCategory.id;
+        finalCategoryId = existingCategory.categoryId;
       } else {
         // Create new category
-        const newCategoryId = Date.now().toString();
-        onAddCategory({
+        const newCategory = {
           name: categoryInput,
-          type: 'expense',
+          type: 'EXPENSE',
           classification: classification,
-        });
-        finalCategoryId = newCategoryId;
+        };
+        onAddCategory(newCategory);
+        // Note: The ID will be set by the API response
+        finalCategoryId = categoryInput; // Temporary identifier
       }
     }
 
@@ -122,12 +123,12 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {filteredCategories.map(cat => (
                   <button
-                    key={cat.id}
+                    key={cat.categoryId}
                     type="button"
                     onClick={() => handleSelectCategory(cat)}
                     className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center justify-between"
                   >
-                    <span className="text-gray-900">{cat.name}</span>
+                    <span className="text-gray-900">{cat.categoryName}</span>
                     <span className={`text-xs px-2 py-0.5 rounded ${
                       cat.classification === 'need' 
                         ? 'bg-blue-100 text-blue-700' 
@@ -153,7 +154,7 @@ export function AddTransactionForm({ wallets, categories, onAddTransaction, onAd
               required
             >
               {wallets.map(w => (
-                <option key={w.id} value={w.id}>{w.accountName}</option>
+                <option key={w.accountId} value={w.accountId}>{w.accountName}</option>
               ))}
             </select>
           </div>

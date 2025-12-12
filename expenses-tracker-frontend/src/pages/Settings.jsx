@@ -73,8 +73,8 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
   };
 
   const startEditCategory = (category) => {
-    setEditingCategory(category.id);
-    setEditedName(category.name);
+    setEditingCategory(category.categoryId);
+    setEditedName(category.categoryName);
     setEditedClassification(category.classification);
   };
 
@@ -193,8 +193,8 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
               <h3 className="text-sm text-gray-500 mb-3">NEEDS ({needCategories.length})</h3>
               <div className="space-y-2">
                 {needCategories.map(category => (
-                  <div key={category.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    {editingCategory === category.id ? (
+                  <div key={category.categoryId} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    {editingCategory === category.categoryId ? (
                       <div className="flex-1 flex items-center gap-3">
                         <input
                           type="text"
@@ -228,7 +228,7 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
                           </label>
                         </div>
                         <button
-                          onClick={() => handleUpdateCategory(category.id)}
+                          onClick={() => handleUpdateCategory(category.categoryId)}
                           className="p-1.5 bg-green-500 text-white rounded hover:bg-green-600"
                         >
                           Save
@@ -242,7 +242,7 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
                       </div>
                     ) : (
                       <>
-                        <span className="text-gray-900">{category.name}</span>
+                        <span className="text-gray-900">{category.categoryName}</span>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => startEditCategory(category)}
@@ -251,7 +251,7 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
                             <Edit2 className="w-4 h-4 text-blue-600" />
                           </button>
                           <button
-                            onClick={() => onDeleteCategory(category.id)}
+                            onClick={() => onDeleteCategory(category.categoryId)}
                             className="p-2 hover:bg-red-100 rounded transition-colors"
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />
@@ -269,8 +269,8 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
               <h3 className="text-sm text-gray-500 mb-3">WANTS ({wantCategories.length})</h3>
               <div className="space-y-2">
                 {wantCategories.map(category => (
-                  <div key={category.id} className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    {editingCategory === category.id ? (
+                  <div key={category.categoryId} className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    {editingCategory === category.categoryId ? (
                       <div className="flex-1 flex items-center gap-3">
                         <input
                           type="text"
@@ -304,7 +304,7 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
                           </label>
                         </div>
                         <button
-                          onClick={() => handleUpdateCategory(category.id)}
+                          onClick={() => handleUpdateCategory(category.categoryId)}
                           className="p-1.5 bg-green-500 text-white rounded hover:bg-green-600"
                         >
                           Save
@@ -318,7 +318,7 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
                       </div>
                     ) : (
                       <>
-                        <span className="text-gray-900">{category.name}</span>
+                        <span className="text-gray-900">{category.categoryName}</span>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => startEditCategory(category)}
@@ -327,7 +327,7 @@ export function Settings({ categories, onAddCategory, onUpdateCategory, onDelete
                             <Edit2 className="w-4 h-4 text-orange-600" />
                           </button>
                           <button
-                            onClick={() => onDeleteCategory(category.id)}
+                            onClick={() => onDeleteCategory(category.categoryId)}
                             className="p-2 hover:bg-red-100 rounded transition-colors"
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />

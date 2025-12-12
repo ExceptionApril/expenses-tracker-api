@@ -9,145 +9,188 @@ import { Analytics } from './pages/Analytics';
 import { Settings } from './pages/Settings';
 import { Profile } from './pages/Profile';
 import { Login } from './pages/Login';
+import { accountsAPI, categoriesAPI, transactionsAPI, budgetsAPI } from './services/api';
+
+// Helper to normalize category data
+const normalizeCategory = (cat) => ({
+  ...cat,
+  classification: cat.classification ? cat.classification.toLowerCase() : 'want',
+});
+
+// Helper to normalize transaction data
+const normalizeTransaction = (txn) => ({
+  ...txn,
+  transactionType: txn.transactionType ? txn.transactionType.toLowerCase() : 'expense',
+});
+
+// Helper to normalize account data
+const normalizeAccount = (acc) => ({
+  ...acc,
+  accountType: acc.accountType ? acc.accountType.toLowerCase() : 'cash',
+});
 
 export default function App() {
   const [auth, setAuth] = useState(!!localStorage.getItem('token'));
-  // Default categories with Need/Want classification
-  const defaultCategories = [
-    { id: '1', name: 'Food & Dining', type: 'expense', classification: 'need' },
-    { id: '2', name: 'Transportation', type: 'expense', classification: 'need' },
-    { id: '3', name: 'Bills & Utilities', type: 'expense', classification: 'need' },
-    { id: '4', name: 'Healthcare', type: 'expense', classification: 'need' },
-    { id: '5', name: 'Shopping', type: 'expense', classification: 'want' },
-    { id: '6', name: 'Entertainment', type: 'expense', classification: 'want' },
-    { id: '7', name: 'Education', type: 'expense', classification: 'need' },
-    { id: '8', name: 'Other', type: 'expense', classification: 'want' },
-  ];
-
-  const [categories, setCategories] = useState(defaultCategories);
+  const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [budgets, setBudgets] = useState([]);
-  const [wallets, setWallets] = useState([
-    { id: '1', accountName: 'Cash', accountType: 'cash', balance: 1500, color: '#10B981' },
-    { id: '2', accountName: 'Bank Account', accountType: 'bank', balance: 8500, color: '#3B82F6' },
-    { id: '3', accountName: 'GCash', accountType: 'e-wallet', balance: 2000, color: '#8B5CF6' },
-  ]);
+  const [wallets, setWallets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Listen for auth changes
   useEffect(() => {
-    const handleAuthChange = () => {
-      setAuth(!!localStorage.getItem('token'));
-    };
+    const handleAuthChange = () => setAuth(!!localStorage.getItem('token'));
     window.addEventListener('authChanged', handleAuthChange);
     return () => window.removeEventListener('authChanged', handleAuthChange);
   }, []);
 
-  // Load data from localStorage
   useEffect(() => {
-    const savedCategories = localStorage.getItem('categories');
-    const savedTransactions = localStorage.getItem('transactions');
-    const savedBudgets = localStorage.getItem('budgets');
-    const savedWallets = localStorage.getItem('wallets');
+    if (auth) loadData();
+    else setLoading(false);
+  }, [auth]);
 
-    if (savedCategories) setCategories(JSON.parse(savedCategories));
-    if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
-    if (savedBudgets) setBudgets(JSON.parse(savedBudgets));
-    if (savedWallets) setWallets(JSON.parse(savedWallets));
-  }, []);
-
-  // Save data to localStorage
-  useEffect(() => {
-    localStorage.setItem('categories', JSON.stringify(categories));
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-    localStorage.setItem('budgets', JSON.stringify(budgets));
-    localStorage.setItem('wallets', JSON.stringify(wallets));
-  }, [categories, transactions, budgets, wallets]);
-
-  const handleAddTransaction = (transaction) => {
-    const newTransaction = {
-      ...transaction,
-      id: Date.now().toString(),
-    };
-
-    setTransactions([newTransaction, ...transactions]);
-
-    // Update wallet balance (deduct for expenses)
-    setWallets(wallets.map(w => {
-      if (w.id === transaction.accountId) {
-        return {
-          ...w,
-          balance: w.balance - transaction.amount
-        };
-      }
-      return w;
-    }));
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [accountsRes, categoriesRes, transactionsRes, budgetsRes] = await Promise.all([
+        accountsAPI.getAll(),
+        categoriesAPI.getAll(),
+        transactionsAPI.getAll(),
+        budgetsAPI.getAll(),
+      ]);
+      if (accountsRes?.success) setWallets((accountsRes.data || []).map(normalizeAccount));
+      if (categoriesRes?.success) setCategories((categoriesRes.data || []).map(normalizeCategory));
+      if (transactionsRes?.success) setTransactions((transactionsRes.data || []).map(normalizeTransaction));
+      if (budgetsRes?.success) setBudgets(budgetsRes.data || []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteTransaction = (id) => {
-    const transaction = transactions.find(t => t.id === id);
-    if (!transaction) return;
-
-    // Restore wallet balance
-    setWallets(wallets.map(w => {
-      if (w.id === transaction.accountId) {
-        return {
-          ...w,
-          balance: w.balance + transaction.amount
-        };
-      }
-      return w;
-    }));
-
-    setTransactions(transactions.filter(t => t.id !== id));
+  const handleAddTransaction = async (transaction) => {
+    try {
+      const response = await transactionsAPI.create(transaction);
+      if (response?.success) {
+        setTransactions([normalizeTransaction(response.data), ...transactions]);
+        const accountsRes = await accountsAPI.getAll();
+        if (accountsRes?.success) setWallets((accountsRes.data || []).map(normalizeAccount));
+      } else console.error('Error adding transaction:', response?.message);
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+    }
   };
 
-  const handleAddCategory = (category) => {
-    const newCategory = {
-      ...category,
-      id: Date.now().toString(),
-    };
-    setCategories([...categories, newCategory]);
+  const handleDeleteTransaction = async (id) => {
+    try {
+      const response = await transactionsAPI.delete(id);
+      if (response?.success) {
+        setTransactions(transactions.filter(t => t.transactionId !== id));
+        const accountsRes = await accountsAPI.getAll();
+        if (accountsRes?.success) setWallets(accountsRes.data || []);
+      } else console.error('Error deleting transaction:', response?.message);
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    }
+  };
+
+  const handleAddCategory = async (category) => {
+    try {
+      const response = await categoriesAPI.create({
+        name: category.name,
+        type: category.type || 'EXPENSE',
+        classification: category.classification,
+      });
+      if (response?.success) {
+        setCategories([...categories, normalizeCategory(response.data)]);
+      } else console.error('Error adding category:', response?.message);
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
   };
 
   const handleUpdateCategory = (id, updates) => {
-    setCategories(categories.map(c => c.id === id ? { ...c, ...updates } : c));
+    setCategories(categories.map(c => c.categoryId === id ? { ...c, ...updates } : c));
   };
 
-  const handleDeleteCategory = (id) => {
-    setCategories(categories.filter(c => c.id !== id));
+  const handleDeleteCategory = async (id) => {
+    try {
+      const response = await categoriesAPI.delete(id);
+      if (response?.success) setCategories(categories.filter(c => c.categoryId !== id));
+      else console.error('Error deleting category:', response?.message);
+    } catch (error) {
+      console.error('Error deleting category:', error);
+    }
   };
 
-  const handleAddBudget = (budget) => {
-    const newBudget = {
-      ...budget,
-      id: Date.now().toString(),
-    };
-    setBudgets([...budgets, newBudget]);
+  const handleAddBudget = async (budget) => {
+    try {
+      const response = await budgetsAPI.create(budget);
+      if (response?.success) setBudgets([...budgets, response.data]);
+      else console.error('Error adding budget:', response?.message);
+    } catch (error) {
+      console.error('Error adding budget:', error);
+    }
   };
 
-  const handleUpdateBudget = (id, updates) => {
-    setBudgets(budgets.map(b => b.id === id ? { ...b, ...updates } : b));
+  const handleUpdateBudget = async (id, updates) => {
+    try {
+      const response = await budgetsAPI.update(id, updates);
+      if (response?.success) setBudgets(budgets.map(b => b.budgetId === id ? response.data : b));
+      else console.error('Error updating budget:', response?.message);
+    } catch (error) {
+      console.error('Error updating budget:', error);
+    }
   };
 
-  const handleDeleteBudget = (id) => {
-    setBudgets(budgets.filter(b => b.id !== id));
+  const handleDeleteBudget = async (id) => {
+    try {
+      const response = await budgetsAPI.delete(id);
+      if (response?.success) setBudgets(budgets.filter(b => b.budgetId !== id));
+      else console.error('Error deleting budget:', response?.message);
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+    }
   };
 
-  const handleAddWallet = (wallet) => {
-    const newWallet = {
-      ...wallet,
-      id: Date.now().toString(),
-    };
-    setWallets([...wallets, newWallet]);
+  const handleAddWallet = async (wallet) => {
+    try {
+      const response = await accountsAPI.create({
+        accountName: wallet.accountName,
+        accountType: wallet.accountType.toUpperCase(),
+        balance: wallet.balance || 0,
+      });
+      if (response?.success) setWallets([...wallets, normalizeAccount(response.data)]);
+      else console.error('Error adding wallet:', response?.message);
+    } catch (error) {
+      console.error('Error adding wallet:', error);
+    }
   };
 
   const handleUpdateWallet = (id, updates) => {
-    setWallets(wallets.map(w => w.id === id ? { ...w, ...updates } : w));
+    setWallets(wallets.map(w => w.accountId === id ? { ...w, ...updates } : w));
   };
 
-  const handleDeleteWallet = (id) => {
-    setWallets(wallets.filter(w => w.id !== id));
+  const handleDeleteWallet = async (id) => {
+    try {
+      const response = await accountsAPI.delete(id);
+      if (response?.success) setWallets(wallets.filter(w => w.accountId !== id));
+      else console.error('Error deleting wallet:', response?.message);
+    } catch (error) {
+      console.error('Error deleting wallet:', error);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router>
@@ -156,13 +199,12 @@ export default function App() {
       ) : (
         <div className="flex h-screen bg-gray-50">
           <Sidebar />
-          
           <div className="flex-1 flex flex-col overflow-hidden">
             <Routes>
-              <Route 
-                path="/dashboard" 
+              <Route
+                path="/dashboard"
                 element={
-                  <Dashboard 
+                  <Dashboard
                     transactions={transactions}
                     budgets={budgets}
                     categories={categories}
@@ -172,12 +214,12 @@ export default function App() {
                     onAddBudget={handleAddBudget}
                     onUpdateBudget={handleUpdateBudget}
                   />
-                } 
+                }
               />
-              <Route 
-                path="/transactions" 
+              <Route
+                path="/transactions"
                 element={
-                  <Transactions 
+                  <Transactions
                     transactions={transactions}
                     categories={categories}
                     wallets={wallets}
@@ -185,12 +227,12 @@ export default function App() {
                     onAddCategory={handleAddCategory}
                     onDelete={handleDeleteTransaction}
                   />
-                } 
+                }
               />
-              <Route 
-                path="/wallets" 
+              <Route
+                path="/wallets"
                 element={
-                  <Wallets 
+                  <Wallets
                     wallets={wallets}
                     transactions={transactions}
                     categories={categories}
@@ -198,12 +240,12 @@ export default function App() {
                     onUpdateWallet={handleUpdateWallet}
                     onDeleteWallet={handleDeleteWallet}
                   />
-                } 
+                }
               />
-              <Route 
-                path="/budget" 
+              <Route
+                path="/budget"
                 element={
-                  <Budget 
+                  <Budget
                     budgets={budgets}
                     categories={categories}
                     transactions={transactions}
@@ -211,35 +253,30 @@ export default function App() {
                     onUpdateBudget={handleUpdateBudget}
                     onDeleteBudget={handleDeleteBudget}
                   />
-                } 
+                }
               />
-              <Route 
-                path="/analytics" 
+              <Route
+                path="/analytics"
                 element={
-                  <Analytics 
+                  <Analytics
                     transactions={transactions}
                     categories={categories}
                     wallets={wallets}
                   />
-                } 
+                }
               />
-              <Route 
-                path="/settings" 
+              <Route
+                path="/settings"
                 element={
-                  <Settings 
+                  <Settings
                     categories={categories}
                     onAddCategory={handleAddCategory}
                     onUpdateCategory={handleUpdateCategory}
                     onDeleteCategory={handleDeleteCategory}
                   />
-                } 
+                }
               />
-              <Route 
-                path="/profile" 
-                element={
-                  <Profile />
-                } 
-              />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </div>

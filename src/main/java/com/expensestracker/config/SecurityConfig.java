@@ -54,8 +54,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Allow frontend dev origins (localhost and 127.0.0.1) - safe for local development
-        config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://127.0.0.1:3000"));
+        // Allow frontend dev origins (localhost and 127.0.0.1 on any port) - safe for local development
+        config.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000", "http://127.0.0.1:3000",
+            "http://localhost:3001", "http://127.0.0.1:3001",
+            "http://localhost:3002", "http://127.0.0.1:3002",
+            "http://localhost:3003", "http://127.0.0.1:3003"
+        ));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setAllowCredentials(true);

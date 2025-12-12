@@ -4,20 +4,18 @@ public class CategoryResponse {
     private Long categoryId;
     private String categoryName;
     private String categoryType;
-    private String classification; // <--- ADDED THIS
-    private String icon;
+    private String classification;
     private boolean isSystemCategory;
     
     public CategoryResponse() {
     }
     
     public CategoryResponse(Long categoryId, String categoryName, String categoryType, 
-                           String classification, String icon, boolean isSystemCategory) {
+                           String classification, boolean isSystemCategory) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.categoryType = categoryType;
-        this.classification = classification; // <--- ADDED THIS
-        this.icon = icon;
+        this.classification = classification;
         this.isSystemCategory = isSystemCategory;
     }
     
@@ -29,8 +27,7 @@ public class CategoryResponse {
         private Long categoryId;
         private String categoryName;
         private String categoryType;
-        private String classification; // <--- ADDED THIS
-        private String icon;
+        private String classification;
         private boolean isSystemCategory;
         
         public CategoryResponseBuilder categoryId(Long categoryId) {
@@ -53,18 +50,13 @@ public class CategoryResponse {
             return this;
         }
         
-        public CategoryResponseBuilder icon(String icon) {
-            this.icon = icon;
-            return this;
-        }
-        
         public CategoryResponseBuilder isSystemCategory(boolean isSystemCategory) {
             this.isSystemCategory = isSystemCategory;
             return this;
         }
         
         public CategoryResponse build() {
-            return new CategoryResponse(categoryId, categoryName, categoryType, classification, icon, isSystemCategory);
+            return new CategoryResponse(categoryId, categoryName, categoryType, classification, isSystemCategory);
         }
     }
     
@@ -80,9 +72,6 @@ public class CategoryResponse {
 
     public String getClassification() { return classification; } // <--- ADDED THIS
     public void setClassification(String classification) { this.classification = classification; } // <--- ADDED THIS
-    
-    public String getIcon() { return icon; }
-    public void setIcon(String icon) { this.icon = icon; }
     
     public boolean isSystemCategory() { return isSystemCategory; }
     public void setSystemCategory(boolean systemCategory) { isSystemCategory = systemCategory; }
