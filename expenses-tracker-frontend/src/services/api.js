@@ -4,16 +4,20 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 const getUserId = () => {
   const user = localStorage.getItem('user');
   if (user) {
-    return JSON.parse(user).userId;
+    const parsed = JSON.parse(user);
+    console.log('getUserId: Retrieved user from localStorage:', parsed);
+    return parsed.userId;
   }
+  console.log('getUserId: No user found in localStorage');
   return null;
 };
 
 const getHeaders = () => {
   const userId = getUserId();
+  console.log('getHeaders: Using userId:', userId);
   return {
     'Content-Type': 'application/json',
-    'userId': userId || '',
+    'userId': userId ? String(userId) : '',
   };
 };
 
@@ -67,24 +71,46 @@ export const accountsAPI = {
   },
 
   create: async (accountData) => {
+    // Convert hyphenated account types to underscore format for backend
+    const accountTypeMap = {
+      'e-wallet': 'E_WALLET',
+      'credit-card': 'CREDIT_CARD',
+      'debit-card': 'DEBIT_CARD',
+      'cash': 'CASH',
+      'bank': 'BANK',
+      'bank-account': 'BANK_ACCOUNT',
+      'gcash': 'GCASH',
+      'wallet': 'WALLET',
+      'savings': 'SAVINGS'
+    };
+    
+    const accountType = accountTypeMap[accountData.accountType.toLowerCase()] || accountData.accountType.toUpperCase();
+    
+    console.log('Creating account with type:', accountType);
+    
     const response = await fetch(`${API_BASE_URL}/accounts`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
         accountName: accountData.accountName || '',
-        accountType: (accountData.accountType || 'cash').toUpperCase(),
+        accountType: accountType,
         balance: parseFloat(accountData.balance) || 0,
       }),
     });
-    return response.json();
+    const result = await response.json();
+    console.log('Account creation response:', result);
+    return result;
   },
 
   delete: async (id) => {
+    console.log('Deleting account with ID:', id);
     const response = await fetch(`${API_BASE_URL}/accounts/${id}`, {
       method: 'DELETE',
       headers: getHeaders(),
     });
-    return response.json();
+    const result = await response.json();
+    console.log('Account deletion response:', result);
+    return result;
   },
 };
 

@@ -170,6 +170,9 @@ public class Account {
         BANK,
         GCASH,
         WALLET,
-        SAVINGS
+        SAVINGS,
+        E_WALLET,
+        CREDIT_CARD,
+        DEBIT_CARD
     }
 }

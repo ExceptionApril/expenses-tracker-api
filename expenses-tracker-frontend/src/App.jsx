@@ -24,10 +24,28 @@ const normalizeTransaction = (txn) => ({
 });
 
 // Helper to normalize account data
-const normalizeAccount = (acc) => ({
-  ...acc,
-  accountType: acc.accountType ? acc.accountType.toLowerCase() : 'cash',
-});
+const normalizeAccount = (acc) => {
+  // Convert backend enum format to frontend format
+  const typeMap = {
+    'E_WALLET': 'e-wallet',
+    'CREDIT_CARD': 'credit-card',
+    'DEBIT_CARD': 'debit-card',
+    'BANK_ACCOUNT': 'bank',
+    'CASH': 'cash',
+    'BANK': 'bank',
+    'GCASH': 'gcash',
+    'WALLET': 'wallet',
+    'SAVINGS': 'savings'
+  };
+  
+  const normalizedType = typeMap[acc.accountType?.toUpperCase()] || acc.accountType?.toLowerCase() || 'cash';
+  
+  return {
+    ...acc,
+    id: acc.accountId, // Add id field for compatibility
+    accountType: normalizedType,
+  };
+};
 
 export default function App() {
   const [auth, setAuth] = useState(!!localStorage.getItem('token'));
@@ -51,12 +69,20 @@ export default function App() {
   const loadData = async () => {
     try {
       setLoading(true);
+      console.log('Loading data from backend...');
+      
       const [accountsRes, categoriesRes, transactionsRes, budgetsRes] = await Promise.all([
         accountsAPI.getAll(),
         categoriesAPI.getAll(),
         transactionsAPI.getAll(),
         budgetsAPI.getAll(),
       ]);
+      
+      console.log('Accounts Response:', accountsRes);
+      console.log('Categories Response:', categoriesRes);
+      console.log('Transactions Response:', transactionsRes);
+      console.log('Budgets Response:', budgetsRes);
+      
       if (accountsRes?.success) setWallets((accountsRes.data || []).map(normalizeAccount));
       if (categoriesRes?.success) setCategories((categoriesRes.data || []).map(normalizeCategory));
       if (transactionsRes?.success) setTransactions((transactionsRes.data || []).map(normalizeTransaction));
@@ -173,10 +199,19 @@ export default function App() {
 
   const handleDeleteWallet = async (id) => {
     try {
+      console.log('Attempting to delete wallet with ID:', id);
       const response = await accountsAPI.delete(id);
-      if (response?.success) setWallets(wallets.filter(w => w.accountId !== id));
-      else console.error('Error deleting wallet:', response?.message);
+      console.log('Delete response:', response);
+      if (response?.success) {
+        setWallets(wallets.filter(w => w.accountId !== id && w.id !== id));
+        // Reload all data to ensure consistency
+        loadData();
+      } else {
+        alert(`Failed to delete wallet: ${response?.message || 'Unknown error'}`);
+        console.error('Error deleting wallet:', response?.message);
+      }
     } catch (error) {
+      alert(`Error deleting wallet: ${error.message}`);
       console.error('Error deleting wallet:', error);
     }
   };

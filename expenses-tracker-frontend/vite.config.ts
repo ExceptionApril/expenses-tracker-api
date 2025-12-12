@@ -49,6 +49,10 @@
         '@': path.resolve(__dirname, './src'),
       },
     },
+    optimizeDeps: {
+      force: true,
+      include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
+    },
     build: {
       target: 'esnext',
       outDir: 'build',
