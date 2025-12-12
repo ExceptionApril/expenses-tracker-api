@@ -1,8 +1,14 @@
--- Create Database
+-- ==========================================
+-- 1. DATABASE SETUP
+-- ==========================================
 CREATE DATABASE IF NOT EXISTS expense_tracker_api;
 USE expense_tracker_api;
 
--- Create users table
+-- ==========================================
+-- 2. TABLE CREATION (Structure & Relations)
+-- ==========================================
+
+-- USERS Table (The Owner)
 CREATE TABLE IF NOT EXISTS users (
     user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
@@ -11,12 +17,13 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create account table
+-- ACCOUNT Table (User owns Account)
+-- Includes color and card details for the "Wallet" feature
 CREATE TABLE IF NOT EXISTS account (
     account_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     account_name VARCHAR(100) NOT NULL,
-    account_type VARCHAR(50) NOT NULL,
+    account_type VARCHAR(50) NOT NULL, -- Stores 'CASH', 'BANK', 'GCASH', etc.
     balance DECIMAL(15,2) NOT NULL DEFAULT 0,
     color VARCHAR(20) DEFAULT '#3B82F6',
     card_number VARCHAR(20),
@@ -26,18 +33,19 @@ CREATE TABLE IF NOT EXISTS account (
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create category table
+-- CATEGORY Table (User defines Category)
 CREATE TABLE IF NOT EXISTS category (
     category_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT,
+    user_id BIGINT, -- Nullable because some categories are system-wide
     name VARCHAR(100) NOT NULL,
-    type VARCHAR(20) NOT NULL,
-    classification VARCHAR(20),
+    type VARCHAR(20) NOT NULL, -- 'INCOME' or 'EXPENSE'
+    classification VARCHAR(20), -- 'NEED' or 'WANT'
     icon VARCHAR(50),
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create transaction table
+-- TRANSACTION Table (Account funds Transaction & Category classifies Transaction)
+-- Includes 'priority' to match your Frontend "Need/Want" switch
 CREATE TABLE IF NOT EXISTS transaction (
     transaction_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     account_id BIGINT NOT NULL,
@@ -45,13 +53,14 @@ CREATE TABLE IF NOT EXISTS transaction (
     amount DECIMAL(15,2) NOT NULL,
     transaction_date DATE NOT NULL,
     description VARCHAR(255),
-    transaction_type VARCHAR(20),
-    priority VARCHAR(20) DEFAULT 'Medium',
+    transaction_type VARCHAR(20), -- 'INCOME' or 'EXPENSE'
+    priority VARCHAR(20) DEFAULT 'Medium', -- Stores 'High' (Need) or 'Low' (Want)
     FOREIGN KEY (account_id) REFERENCES account(account_id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Create budget table
+-- BUDGET Table (Category has_limit Budget)
+-- Includes start_date/end_date to support "Budget History" (e.g. Nov Budget vs Dec Budget)
 CREATE TABLE IF NOT EXISTS budget (
     budget_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
@@ -63,23 +72,21 @@ CREATE TABLE IF NOT EXISTS budget (
     FOREIGN KEY (category_id) REFERENCES category(category_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Insert test user (admin@example.com / Welcome1!)
+-- ==========================================
+-- 3. INITIAL DATA SEEDING (Essentials Only)
+-- ==========================================
+
+-- 1. Insert Default Admin User
+-- Credentials: admin@example.com / Welcome1!
 INSERT INTO users (name, email, password, created_at) 
 VALUES ('Admin User', 'admin@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36gBsZ34', NOW())
 ON DUPLICATE KEY UPDATE user_id=LAST_INSERT_ID(user_id);
 
--- Get the inserted user ID
+-- Get the ID of the user we just inserted
 SET @user_id = (SELECT user_id FROM users WHERE email = 'admin@example.com' LIMIT 1);
 
--- Insert test accounts
-INSERT INTO account (user_id, account_name, account_type, balance, color, card_number, card_holder, expiry_date, created_at)
-VALUES 
-    (@user_id, 'Checking Account', 'BANK', 5000.00, '#3B82F6', '4532 **** **** 1234', 'Admin User', '12/28', NOW()),
-    (@user_id, 'Cash', 'CASH', 500.00, '#10B981', NULL, NULL, NULL, NOW()),
-    (@user_id, 'Savings', 'SAVINGS', 10000.00, '#F59E0B', '5100 **** **** 9876', 'Admin User', '06/29', NOW())
-ON DUPLICATE KEY UPDATE account_id=LAST_INSERT_ID(account_id);
-
--- Insert system categories
+-- 2. Insert Basic System Categories
+-- These are required so the user can classify transactions immediately
 INSERT INTO category (user_id, name, type, classification, icon)
 VALUES 
     (NULL, 'Salary', 'INCOME', 'NEED', '💰'),
@@ -87,24 +94,18 @@ VALUES
     (NULL, 'Groceries', 'EXPENSE', 'NEED', '🛒'),
     (NULL, 'Utilities', 'EXPENSE', 'NEED', '💡'),
     (NULL, 'Entertainment', 'EXPENSE', 'WANT', '🎬'),
-    (NULL, 'Transportation', 'EXPENSE', 'NEED', 'Bus'),
+    (NULL, 'Transportation', 'EXPENSE', 'NEED', '🚌'),
     (NULL, 'Savings', 'EXPENSE', NULL, '🏦')
 ON DUPLICATE KEY UPDATE category_id=LAST_INSERT_ID(category_id);
 
--- Get category IDs
-SET @salary_cat = (SELECT category_id FROM category WHERE name = 'Salary' LIMIT 1);
-SET @grocery_cat = (SELECT category_id FROM category WHERE name = 'Groceries' LIMIT 1);
-SET @checking_acct = (SELECT account_id FROM account WHERE account_name = 'Checking Account' LIMIT 1);
-
--- Insert test transactions
-INSERT INTO transaction (account_id, category_id, amount, transaction_date, description, transaction_type, priority)
+-- 3. Insert Default Accounts (Optional - removes manual setup for testing)
+INSERT INTO account (user_id, account_name, account_type, balance, color, card_number, card_holder, expiry_date, created_at)
 VALUES 
-    (@checking_acct, @salary_cat, 3000.00, CURDATE(), 'Monthly salary', 'INCOME', 'High'),
-    (@checking_acct, @grocery_cat, 150.00, DATE_SUB(CURDATE(), INTERVAL 5 DAY), 'Weekly groceries', 'EXPENSE', 'Medium')
-ON DUPLICATE KEY UPDATE transaction_id=LAST_INSERT_ID(transaction_id);
+    (@user_id, 'Checking Account', 'BANK', 0.00, '#3B82F6', '4532 **** **** 1234', 'Admin User', '12/28', NOW()),
+    (@user_id, 'Cash', 'CASH', 0.00, '#10B981', NULL, NULL, NULL, NOW())
+ON DUPLICATE KEY UPDATE account_id=LAST_INSERT_ID(account_id);
 
--- Insert test budgets
-INSERT INTO budget (user_id, category_id, amount_limit, start_date, end_date)
-VALUES 
-    (@user_id, @grocery_cat, 500.00, DATE_SUB(CURDATE(), INTERVAL 30 DAY), DATE_ADD(CURDATE(), INTERVAL 30 DAY))
-ON DUPLICATE KEY UPDATE budget_id=LAST_INSERT_ID(budget_id);
+-- ==========================================
+-- NOTE: Transactions and Budgets are intentionally LEFT EMPTY.
+-- This ensures that only the data YOU input on the website is stored.
+-- ==========================================

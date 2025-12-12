@@ -9,10 +9,6 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
     return categories.find(c => c.id === categoryId)?.name || 'Unknown';
   };
 
-  const getCategoryClassification = (categoryId) => {
-    return categories.find(c => c.id === categoryId)?.classification || 'want';
-  };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -20,6 +16,13 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
       day: 'numeric',
       year: 'numeric'
     }).format(date);
+  };
+
+  // Helper to convert DB Priority ("High"/"Low") back to UI text ("Need"/"Want")
+  const getDisplayClassification = (priority) => {
+    if (priority === 'High') return 'Need';
+    if (priority === 'Low') return 'Want';
+    return 'Want'; // Default fallback
   };
 
   if (transactions.length === 0) {
@@ -34,10 +37,13 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
   return (
     <div className="divide-y divide-gray-200">
       {transactions.map((transaction) => {
-        const classification = getCategoryClassification(transaction.categoryId);
+        // FIX: Use the transaction's OWN priority
+        const displayClassification = getDisplayClassification(transaction.priority);
+        const isNeed = displayClassification === 'Need';
+
         return (
           <div
-            key={transaction.id}
+            key={transaction.transactionId} // Ensure you use transactionId if that's what backend sends
             className="p-4 hover:bg-gray-50 transition-colors group"
           >
             <div className="flex items-center justify-between">
@@ -53,12 +59,13 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
                     <div className="text-gray-900 truncate">
                       {getCategoryName(transaction.categoryId)}
                     </div>
+                    {/* Updated Badge Logic */}
                     <span className={`text-xs px-2 py-0.5 rounded ${
-                      classification === 'need' 
+                      isNeed
                         ? 'bg-blue-100 text-blue-700' 
                         : 'bg-orange-100 text-orange-700'
                     }`}>
-                      {classification === 'need' ? 'Need' : 'Want'}
+                      {displayClassification}
                     </span>
                     <span className="text-sm text-gray-500 px-2 py-0.5 bg-gray-100 rounded">
                       {getWalletName(transaction.accountId)}
@@ -83,7 +90,7 @@ export function TransactionList({ transactions, wallets, categories, onDelete })
 
                 {/* Delete Button */}
                 <button
-                  onClick={() => onDelete(transaction.id)}
+                  onClick={() => onDelete(transaction.transactionId)}
                   className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-50 rounded-lg transition-all"
                   title="Delete transaction"
                 >
